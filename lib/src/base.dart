@@ -2,7 +2,7 @@ import './hexabase.dart';
 import 'package:graphql/client.dart';
 
 class HexabaseBase {
-  static late HexabaseClient client;
+  static late Hexabase client;
 
   Future<QueryResult> mutation(String query,
       {Map<String, dynamic>? variables, bool auth = true}) async {

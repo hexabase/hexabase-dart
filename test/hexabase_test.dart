@@ -1,12 +1,9 @@
-import 'dart:math';
-
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:hexabase/hexabase.dart';
 import 'dart:io';
 import 'dart:convert';
 
-HexabaseClient? client;
 void main() {
   setUp(() async {
     var path = 'test/keys.json';
@@ -15,12 +12,12 @@ void main() {
         ? await file.readAsString()
         : await File('./$path').readAsString();
     var keys = json.decode(str);
-    client = HexabaseClient();
-    await client!.auth.signIn(keys['email'], keys['password']);
+    var client = Hexabase();
+    await client.auth.signIn(keys['email'], keys['password']);
   });
 
   test('Not login error', () async {
-    var client = HexabaseClient();
+    var client = Hexabase();
     try {
       await client.workspace.all();
       expect(true, false);
@@ -28,9 +25,22 @@ void main() {
       expect(e.toString(), contains('Not authenticated'));
     }
   });
+  test('No initializing error', () async {
+    try {
+      var client = Hexabase.instance;
+      await client.workspace.all();
+      expect(true, false);
+    } catch (e) {
+      expect(
+          e.toString(),
+          contains(
+              'You must initialize the Hexabase instance before calling Hexabase.instance'));
+    }
+  });
 
   test('Get all workspaces', () async {
-    var workspaces = await client!.workspace.all();
+    var client = Hexabase.instance;
+    var workspaces = await client.workspace.all();
     expect(workspaces[0].id, isNot(''));
     expect(workspaces[0].name, isNot(''));
   });

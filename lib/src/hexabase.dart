@@ -6,14 +6,24 @@ import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/workspace.dart';
 import 'package:hexabase/src/env.dart';
 
-class HexabaseClient {
+class Hexabase {
+  static late Hexabase _instance;
   final HexabaseEnv env;
   late HexabaseAuth auth;
   late HexabaseWorkspace workspace;
   String? token;
   late GraphQLClient graphQLClient;
+  bool _initialized = false;
 
-  HexabaseClient({this.env = HexabaseEnv.production}) {
+  static Hexabase get instance {
+    assert(
+      !_instance._initialized,
+      'You must initialize the Hexabase instance before calling Hexabase.instance',
+    );
+    return _instance;
+  }
+
+  Hexabase({this.env = HexabaseEnv.production}) {
     HexabaseBase.client = this;
     auth = HexabaseAuth();
     workspace = HexabaseWorkspace();
@@ -23,6 +33,8 @@ class HexabaseClient {
         getEndpoint(),
       ),
     );
+    _initialized = true;
+    Hexabase._instance = this;
   }
 
   String getEndpoint() {
@@ -34,9 +46,9 @@ class HexabaseClient {
   }
 
   void init() {
-    final httpLink = HttpLink(HexabaseBase.client.getEndpoint());
+    final httpLink = HttpLink(getEndpoint());
     final authLink = AuthLink(
-      getToken: () async => 'Bearer ${HexabaseBase.client.token}',
+      getToken: () async => 'Bearer $token',
     );
     Link link = authLink.concat(httpLink);
     graphQLClient = GraphQLClient(cache: GraphQLCache(), link: link);

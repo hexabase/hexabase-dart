@@ -11,13 +11,19 @@ import 'package:hexabase/hexabase.dart';
 ### Initializing
 
 ```dart
-var client = HexabaseClient();
+Hexabase();
+```
+
+After initialized the client, you can take client object anytime.
+
+```dart
+var client = Hexabase.instance;
 ```
 
 ### Sign in 
 
 ```dart
-await client!.auth.signIn('you@example.com', 'your_secure_password');
+await client.auth.signIn('you@example.com', 'your_secure_password');
 ```
 
 ### Workspace
