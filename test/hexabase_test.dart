@@ -19,6 +19,16 @@ void main() {
     await client!.auth.signIn(keys['email'], keys['password']);
   });
 
+  test('Not login error', () async {
+    var client = HexabaseClient();
+    try {
+      await client.workspace.all();
+      expect(true, false);
+    } catch (e) {
+      expect(e.toString(), contains('Not authenticated'));
+    }
+  });
+
   test('Get all workspaces', () async {
     var workspaces = await client!.workspace.all();
     expect(workspaces[0].id, isNot(''));

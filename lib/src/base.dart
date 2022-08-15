@@ -5,7 +5,10 @@ class HexabaseBase {
   static late HexabaseClient client;
 
   Future<QueryResult> mutation(String query,
-      {Map<String, dynamic>? variables}) async {
+      {Map<String, dynamic>? variables, bool auth = true}) async {
+    if (auth && client.token == null) {
+      throw Exception('Not authenticated');
+    }
     final options = variables != null
         ? MutationOptions(
             document: gql(query),
@@ -23,7 +26,10 @@ class HexabaseBase {
   }
 
   Future<QueryResult> query(String query,
-      {Map<String, dynamic>? variables}) async {
+      {Map<String, dynamic>? variables, bool auth = true}) async {
+    if (auth && client.token == null) {
+      throw Exception('Not authenticated');
+    }
     final options = variables != null
         ? QueryOptions(
             document: gql(query),

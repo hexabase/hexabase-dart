@@ -10,7 +10,7 @@ class HexabaseClient {
   final HexabaseEnv env;
   late HexabaseAuth auth;
   late HexabaseWorkspace workspace;
-  late String token;
+  String? token;
   late GraphQLClient graphQLClient;
 
   HexabaseClient({this.env = HexabaseEnv.production}) {

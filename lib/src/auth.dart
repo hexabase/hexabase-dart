@@ -12,7 +12,8 @@ class HexabaseAuth extends HexabaseBase {
         'password': password,
       },
     };
-    final response = await mutation(GRAPHQL_LOGIN, variables: variables);
+    final response =
+        await mutation(GRAPHQL_LOGIN, variables: variables, auth: false);
     HexabaseBase.client.token = response.data?['login']?['token'];
     HexabaseBase.client.init();
     return false;
