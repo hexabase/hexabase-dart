@@ -1,0 +1,4 @@
+enum HexabaseEnv {
+  staging,
+  production,
+}
