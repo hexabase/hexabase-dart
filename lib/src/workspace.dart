@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
+import 'package:hexabase/src/datastore.dart';
 import 'package:hexabase/src/graphql.dart';
 
 class HexabaseWorkspace extends HexabaseBase {
@@ -8,19 +10,32 @@ class HexabaseWorkspace extends HexabaseBase {
 
   HexabaseWorkspace({this.id, this.name}) : super();
 
+  Future<bool> save() async {
+    final response =
+        await HexabaseBase.query(GRAPHQL_CREATE_WORKSPACE, variables: {
+      'createWorkSpaceInput': {
+        'name': name,
+      }
+    });
+    id = response.data!['w_id'] as String;
+    return true;
+  }
+
   Future<List<HexabaseWorkspace>> all() async {
-    final response = await query(GRAPHQL_WORKSPACES);
-    var workspaces =
-        response.data?['workspaces']?['workspaces'] as List<Object?>;
+    final response = await HexabaseBase.query(GRAPHQL_WORKSPACES);
+    var workspaces = response.data?['workspaces']?['workspaces']
+        as List<Map<String, String>>;
     return workspaces.map((workspace) {
-      workspace = workspace as Map<String, dynamic>;
-      var id = workspace.containsKey('workspace_id')
-          ? workspace['workspace_id']
-          : '';
-      var name = workspace.containsKey('workspace_name')
-          ? workspace['workspace_name']
-          : '';
-      return HexabaseWorkspace(id: id, name: name);
+      return HexabaseWorkspace(
+          id: workspace['workspace_id'], name: workspace['workspace_name']);
     }).toList();
+  }
+
+  HexabaseApplication application(String id) {
+    return HexabaseApplication(id: id);
+  }
+
+  Future<List<HexabaseApplication>> applications() async {
+    return HexabaseApplication.all(id!);
   }
 }

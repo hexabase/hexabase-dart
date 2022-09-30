@@ -4,7 +4,7 @@ import 'package:graphql/client.dart';
 class HexabaseBase {
   static late Hexabase client;
 
-  Future<QueryResult> mutation(String query,
+  static Future<QueryResult> mutation(String query,
       {Map<String, dynamic>? variables, bool auth = true}) async {
     if (auth && client.token == null) {
       throw Exception('Not authenticated');
@@ -25,7 +25,7 @@ class HexabaseBase {
     return result;
   }
 
-  Future<QueryResult> query(String query,
+  static Future<QueryResult> query(String query,
       {Map<String, dynamic>? variables, bool auth = true}) async {
     if (auth && client.token == null) {
       throw Exception('Not authenticated');
