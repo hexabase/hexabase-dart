@@ -24,7 +24,7 @@ void main() {
     var client = Hexabase.instance;
     var application = client.application(id: keys['application']);
     var datastore = application.datastore(id: keys['datastore']);
-    var params = datastore.params();
+    var params = datastore.query();
     params.page(1).per(10).displayId(true);
     params.equalTo('name', '梨');
     var obj = params.toJson();

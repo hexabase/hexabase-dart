@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.2.1
+
+- Change params method to query
+
 ## 0.2.0
 
 - Support operands

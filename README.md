@@ -97,9 +97,9 @@ var datastore = application.datastore(id: 'DATASTORE_ID');
 #### Search datastore items
 
 ```dart
-var params = datastore.params();
-params.equalTo('name', 'value');
-var items = await datastore.items(params);
+var query.= datastore.query.);
+query.equalTo('name', 'value');
+var items = await datastore.items(query.;
 ```
 
 ### Search conditions
@@ -107,14 +107,14 @@ var items = await datastore.items(params);
 #### Equal to
 
 ```dart
-var params = datastore.params();
-params.equalTo('name', 'value');
+var query.= datastore.query();
+query.equalTo('name', 'value');
 ```
 
 #### Not equal to
 
 ```dart
-params.notEqualTo("name", "梨");
+query.notEqualTo("name", "value");
 ```
 
 #### Greater than ">"
@@ -122,7 +122,7 @@ params.notEqualTo("name", "梨");
 Only support int and DateTime.
 
 ```dart
-params.greaterThan("price", 100);
+query.greaterThan("price", 100);
 ```
 
 #### Greater than or equal ">="
@@ -130,7 +130,7 @@ params.greaterThan("price", 100);
 Only support int and DateTime.
 
 ```dart
-params.greaterThanOrEqualTo("price", 100);
+query.greaterThanOrEqualTo("price", 100);
 ```
 
 #### Less than "<"
@@ -138,7 +138,7 @@ params.greaterThanOrEqualTo("price", 100);
 Only support int and DateTime.
 
 ```dart
-params.lessThan("price", 100);
+query.lessThan("price", 100);
 ```
 
 #### Less than or equal "<="
@@ -146,21 +146,21 @@ params.lessThan("price", 100);
 Only support int and DateTime.
 
 ```dart
-params.lessThanOrEqualTo("price", 100);
+query.lessThanOrEqualTo("price", 100);
 ```
 
 #### In
 
 ```dart
 // name == "Apple" or name == "Orange"
-params.inArray("name", ["Apple", "Orange"]);
+query.inArray("name", ["Apple", "Orange"]);
 ```
 
 #### Not in
 
 ```dart
 // name != "Apple" && name != "Orange"
-params.notInArray("name", ["Apple", "Orange"]);
+query.notInArray("name", ["Apple", "Orange"]);
 ```
 
 ## License

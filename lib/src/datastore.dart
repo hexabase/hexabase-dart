@@ -32,7 +32,7 @@ class HexabaseDatastore extends HexabaseBase {
     return HBDataStoreResponseWithCount(res.item1, res.item2);
   }
 
-  HexabaseItemsParameters params() {
+  HexabaseItemsParameters query() {
     return HexabaseItemsParameters();
   }
 

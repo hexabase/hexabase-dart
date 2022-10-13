@@ -25,7 +25,7 @@ void main() {
     var application = client.application(id: keys['application']);
     var datastore = application.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
-    var params = datastore.params();
+    var params = datastore.query();
     params.page(1).per(10).displayId(true);
     params.equalTo('name', '梨');
     var items = await datastore.items(params);
@@ -40,7 +40,7 @@ void main() {
     var application = client.application(id: keys['application']);
     var datastore = application.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
-    var params = datastore.params();
+    var params = datastore.query();
     params.page(1).per(10).displayId(true);
     params.greaterThanOrEqualTo("price", 500);
     var items = await datastore.items(params);
@@ -55,7 +55,7 @@ void main() {
     var application = client.application(id: keys['application']);
     var datastore = application.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
-    var params = datastore.params();
+    var params = datastore.query();
     params.page(1).per(10).displayId(true);
     params.lessThanOrEqualTo("price", 499);
     var items = await datastore.items(params);
@@ -70,7 +70,7 @@ void main() {
     var datastore = application.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 11, 0, 0, 0);
-    var params = datastore.params();
+    var params = datastore.query();
     params.page(1).per(10).displayId(true);
     params.greaterThanOrEqualTo("salesDate", date);
     var items = await datastore.items(params);
@@ -85,7 +85,7 @@ void main() {
     var datastore = application.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 9, 0, 0, 0);
-    var params = datastore.params();
+    var params = datastore.query();
     params.page(1).per(10).displayId(true);
     params.lessThanOrEqualTo("salesDate", date);
     var items = await datastore.items(params);
@@ -100,7 +100,7 @@ void main() {
     var datastore = application.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 10);
-    var params = datastore.params();
+    var params = datastore.query();
     params.page(1).per(10).displayId(true);
     params.greaterThan("salesDate", date);
     var items = await datastore.items(params);
@@ -119,7 +119,7 @@ void main() {
     var datastore = application.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 10);
-    var params = datastore.params();
+    var params = datastore.query();
     params.page(1).per(10).displayId(true);
     params.lessThan("salesDate", date);
     var items = await datastore.items(params);
