@@ -74,8 +74,57 @@ String GRAPHQL_CREATE_WORKSPACE = r'''
   }
 ''';
 
-String GRAPHQL_DATASTORE_GET_DATASTORE_ITEMS = r'''
+String GRAPHQL_GET_ITEM_SEARCH_CONDITIONS = r'''
+  query getItemSearchConditions ($datastoreId: String!, $projectId: String!) {
+    getItemSearchConditions(datastoreId: $datastoreId, projectId: $projectId) {
+      has_error
+      result {
+        f_id
+        name
+        display_id
+        data_type
+        max_value
+        min_value
+        order
+        users_info {
+          single_select
+        }
+        ds_lookup_info {
+          dslookup_project_id
+          dslookup_datastore_id
+          dslookup_field_id
+        }
+        options {
+          option_id
+          sort_id
+          value
+          enabled
+          color
+        }
+        statuses {
+          status_id
+          status_name
+        }
+      }
+    }
+}
+''';
 
+String GRAPHQL_DATASTORE_GET_DATASTORE_ITEMS = r'''
+  mutation datastoreGetDatastoreItems(
+    $projectId: String,
+    $datastoreId: String!,
+    $getItemsParameters: GetItemsParameters!
+  ) {
+    datastoreGetDatastoreItems(
+      projectId: $projectId,
+      getItemsParameters: $getItemsParameters,
+      datastoreId: $datastoreId
+    ) {
+      items
+      totalItems
+    }
+  }
 ''';
 
 String GRAPHQL_GET_APPLICATION_PROJECT_ID_SETTING = r'''

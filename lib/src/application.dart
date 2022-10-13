@@ -3,11 +3,9 @@ import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/datastore.dart';
 import 'package:hexabase/src/graphql.dart';
 
-enum HBAppName { ja, en }
-
 class HexabaseApplication extends HexabaseBase {
   late String? id;
-  late Map<HBAppName, String> name;
+  late Map<String, String> _name;
   late DateTime createdAt;
   late DateTime updatedAt;
   String? templateId;
@@ -23,10 +21,16 @@ class HexabaseApplication extends HexabaseBase {
     return update();
   }
 
+  HexabaseApplication name(String language, String name) {
+    if (!['ja', 'en'].contains(language)) {
+      throw Exception('Language must be ja or en');
+    }
+    _name[language] = name;
+    return this;
+  }
+
   Future<bool> create() async {
-    Map<String, dynamic> createProjectParams = {
-      'name': {'ja': name[HBAppName.ja], 'en': name[HBAppName.en]}
-    };
+    Map<String, dynamic> createProjectParams = {'name': _name};
     if (templateId != null) {
       createProjectParams['templateId'] = templateId;
     }
@@ -40,7 +44,7 @@ class HexabaseApplication extends HexabaseBase {
   Future<bool> update() async {
     Map<String, dynamic> payload = {
       'project_id': id,
-      'project_name': {'ja': name[HBAppName.ja], 'en': name[HBAppName.en]},
+      'project_name': _name,
     };
     if (displayId != null) {
       payload['project_displayid'] = displayId;
@@ -69,6 +73,10 @@ class HexabaseApplication extends HexabaseBase {
     return false;
   }
 
+  HexabaseDatastore datastore({String? id}) {
+    return HexabaseDatastore(id: id, projectId: this.id);
+  }
+
   Future<HexabaseApplication> get(String id) async {
     final response = await HexabaseBase.query(
         GRAPHQL_GET_APPLICATION_PROJECT_ID_SETTING,
@@ -78,10 +86,10 @@ class HexabaseApplication extends HexabaseBase {
     var application = response.data?['getApplicationProjectIdSetting']
         as Map<String, dynamic>;
     this.id = application.containsKey('id') ? application['id'] as String : '';
-    name = application.containsKey('name')
+    _name = application.containsKey('name')
         ? {
-            HBAppName.ja: application['name']['ja'] as String,
-            HBAppName.en: application['name']['en'] as String,
+            'ja': application['name']['ja'] as String,
+            'en': application['name']['en'] as String,
           }
         : {};
     displayId = application.containsKey('display_id')
@@ -105,10 +113,7 @@ class HexabaseApplication extends HexabaseBase {
     var ary = response.data!['getApplicationAndDataStore'] as List<dynamic>;
     return ary.map((data) {
       var application = HexabaseApplication(id: data['application_id']);
-      application.name = {
-        HBAppName.ja: data['name'],
-        HBAppName.en: data['name']
-      };
+      application._name = {'ja': data['name'], 'en': data['name']};
       application.displayId = data['display_id'];
       var datastores = data['datastores'] as List<dynamic>;
       application.datastores = datastores.map((data) {

@@ -40,23 +40,17 @@ void main() {
   test('Create application', () async {
     var client = Hexabase.instance;
     var application = client.application();
-    application.name = {
-      HBAppName.ja: 'テストアプリ',
-      HBAppName.en: 'Test App',
-    };
+    application.name('ja', 'テストアプリ').name('en', 'Test App');
     await application.save();
     expect(application.id, isNot(''));
   });
   test('Update application and delete', () async {
     var client = Hexabase.instance;
     var application = client.application();
-    application.name = {
-      HBAppName.ja: 'テストアプリ',
-      HBAppName.en: 'Test App',
-    };
+    application.name('ja', 'テストアプリ').name('en', 'Test App');
     await application.save();
     await new Future.delayed(new Duration(seconds: 1));
-    application.name[HBAppName.ja] = 'テストアプリ2';
+    application.name('ja', 'テストアプリ2');
     await application.save();
     expect(application.id, isNot(''));
     await application.delete();

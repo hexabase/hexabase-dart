@@ -83,6 +83,86 @@ await application.save();
 await application.delete();
 ```
 
+### Datastore
+
+#### Get datastore
+
+```dart
+var application = client.application(id: 'APPLICATION_ID');
+var datastore = application.datastore(id: 'DATASTORE_ID');
+```
+
+### Datastore Item
+
+#### Search datastore items
+
+```dart
+var params = datastore.params();
+params.equalTo('name', 'value');
+var items = await datastore.items(params);
+```
+
+### Search conditions
+
+#### Equal to
+
+```dart
+var params = datastore.params();
+params.equalTo('name', 'value');
+```
+
+#### Not equal to
+
+```dart
+params.notEqualTo("name", "梨");
+```
+
+#### Greater than ">"
+
+Only support int and DateTime.
+
+```dart
+params.greaterThan("price", 100);
+```
+
+#### Greater than or equal ">="
+
+Only support int and DateTime.
+
+```dart
+params.greaterThanOrEqualTo("price", 100);
+```
+
+#### Less than "<"
+
+Only support int and DateTime.
+
+```dart
+params.lessThan("price", 100);
+```
+
+#### Less than or equal "<="
+
+Only support int and DateTime.
+
+```dart
+params.lessThanOrEqualTo("price", 100);
+```
+
+#### In
+
+```dart
+// name == "Apple" or name == "Orange"
+params.inArray("name", ["Apple", "Orange"]);
+```
+
+#### Not in
+
+```dart
+// name != "Apple" && name != "Orange"
+params.notInArray("name", ["Apple", "Orange"]);
+```
+
 ## License
 
 MIT License

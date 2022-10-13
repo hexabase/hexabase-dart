@@ -1,12 +1,38 @@
 import 'dart:async';
 import 'package:hexabase/src/base.dart';
+import 'package:hexabase/src/field_result.dart';
 import 'package:hexabase/src/graphql.dart';
 
 class HexabaseSearchCondition extends HexabaseBase {
   HexabaseSearchCondition() : super();
   Map<String, dynamic> params = {};
+  static Future<List<HexabaseFieldResult>> all(
+      String projectId, String datastoreId) async {
+    final response = await HexabaseBase.query(
+        GRAPHQL_GET_ITEM_SEARCH_CONDITIONS,
+        variables: {
+          'projectId': projectId,
+          'datastoreId': datastoreId,
+        });
+    if (response.data!['getItemSearchConditions']['has_error']) {
+      throw Exception('Get item search conditions failed');
+    }
+    var conditions =
+        response.data!['getItemSearchConditions']['result'] as List<Object?>;
+    return conditions.map((params) {
+      params = params as Map<String, dynamic>;
+      var fieldResult = HexabaseFieldResult();
+      fieldResult.set(params);
+      return fieldResult;
+    }).toList();
+  }
+
+  HexabaseSearchCondition? get(String id) {
+    return id == params['id'] ? this : null;
+  }
+
   HexabaseSearchCondition seachValue(dynamic value) {
-    params['search_condition'] = value;
+    params['search_value'] = value;
     return this;
   }
 
@@ -41,7 +67,9 @@ class HexabaseSearchCondition extends HexabaseBase {
   }
 
   HexabaseSearchCondition conditions(HexabaseSearchCondition value) {
-    params['conditions'] = value;
+    var ary = params.containsKey('conditions') ? params['conditions'] : [];
+    ary.add(value);
+    params['conditions'] = ary;
     return this;
   }
 
@@ -53,8 +81,8 @@ class HexabaseSearchCondition extends HexabaseBase {
   dynamic toJson() {
     var obj = params;
     if (params.containsKey('conditions')) {
-      HexabaseSearchCondition condition = params['conditions'];
-      obj['conditions'] = condition.toJson();
+      List<HexabaseSearchCondition> conditions = params['conditions'];
+      obj['conditions'] = conditions.map((c) => c.toJson());
     }
     return obj;
   }
