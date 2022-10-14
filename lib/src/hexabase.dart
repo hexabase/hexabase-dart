@@ -13,7 +13,7 @@ class Hexabase {
   final HexabaseEnv env;
   late HexabaseUser auth;
   late HexabaseWorkspace _workspace;
-  late HexabaseApplication _application;
+  late HexabaseProject _project;
   String? token;
   late GraphQLClient graphQLClient;
   bool _initialized = false;
@@ -30,7 +30,7 @@ class Hexabase {
     HexabaseBase.client = this;
     auth = HexabaseUser();
     _workspace = HexabaseWorkspace();
-    _application = HexabaseApplication();
+    _project = HexabaseProject();
     graphQLClient = GraphQLClient(
       cache: GraphQLCache(),
       link: HttpLink(
@@ -53,8 +53,8 @@ class Hexabase {
     return _workspace.all();
   }
 
-  HexabaseApplication application({String? id}) {
-    return HexabaseApplication(id: id);
+  HexabaseProject project({String? id}) {
+    return HexabaseProject(id: id);
   }
 
   String getEndpoint() {

@@ -22,8 +22,8 @@ void main() {
   test('Get search conditions', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var application = client.application(id: keys['application']);
-    var datastore = application.datastore(id: keys['datastore']);
+    var project = client.project(id: keys['project']);
+    var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var params = datastore.query();
     params.page(1).per(10).displayId(true);
@@ -37,8 +37,8 @@ void main() {
   test('Get search conditions with greather or equal', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var application = client.application(id: keys['application']);
-    var datastore = application.datastore(id: keys['datastore']);
+    var project = client.project(id: keys['project']);
+    var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var params = datastore.query();
     params.page(1).per(10).displayId(true);
@@ -52,8 +52,8 @@ void main() {
   test('Get search conditions with less or equal', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var application = client.application(id: keys['application']);
-    var datastore = application.datastore(id: keys['datastore']);
+    var project = client.project(id: keys['project']);
+    var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var params = datastore.query();
     params.page(1).per(10).displayId(true);
@@ -66,8 +66,8 @@ void main() {
   test('Get search conditions with geather or equal w/ time', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var application = client.application(id: keys['application']);
-    var datastore = application.datastore(id: keys['datastore']);
+    var project = client.project(id: keys['project']);
+    var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 11, 0, 0, 0);
     var params = datastore.query();
@@ -81,8 +81,8 @@ void main() {
   test('Get search conditions with less or equal w/ time', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var application = client.application(id: keys['application']);
-    var datastore = application.datastore(id: keys['datastore']);
+    var project = client.project(id: keys['project']);
+    var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 9, 0, 0, 0);
     var params = datastore.query();
@@ -96,8 +96,8 @@ void main() {
   test('Get search conditions with geather w/ time', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var application = client.application(id: keys['application']);
-    var datastore = application.datastore(id: keys['datastore']);
+    var project = client.project(id: keys['project']);
+    var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 10);
     var params = datastore.query();
@@ -115,8 +115,8 @@ void main() {
   test('Get search conditions with less w/ time', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var application = client.application(id: keys['application']);
-    var datastore = application.datastore(id: keys['datastore']);
+    var project = client.project(id: keys['project']);
+    var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 10);
     var params = datastore.query();

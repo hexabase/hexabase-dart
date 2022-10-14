@@ -3,9 +3,9 @@ import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/datastore.dart';
 import 'package:hexabase/src/graphql.dart';
 
-class HexabaseApplication extends HexabaseBase {
+class HexabaseProject extends HexabaseBase {
   late String? id;
-  late Map<String, String> _name;
+  late Map<String, String> _name = {};
   late DateTime createdAt;
   late DateTime updatedAt;
   String? templateId;
@@ -14,14 +14,14 @@ class HexabaseApplication extends HexabaseBase {
 
   late List<HexabaseDatastore> datastores;
 
-  HexabaseApplication({this.id}) : super();
+  HexabaseProject({this.id}) : super();
 
   Future<bool> save() async {
     if (id == null) return create();
     return update();
   }
 
-  HexabaseApplication name(String language, String name) {
+  HexabaseProject name(String language, String name) {
     if (!['ja', 'en'].contains(language)) {
       throw Exception('Language must be ja or en');
     }
@@ -77,34 +77,34 @@ class HexabaseApplication extends HexabaseBase {
     return HexabaseDatastore(id: id, projectId: this.id);
   }
 
-  Future<HexabaseApplication> get(String id) async {
+  Future<HexabaseProject> get(String id) async {
     final response = await HexabaseBase.query(
         GRAPHQL_GET_APPLICATION_PROJECT_ID_SETTING,
         variables: {
           'applicationId': id,
         });
-    var application = response.data?['getApplicationProjectIdSetting']
+    var project = response.data?['getApplicationProjectIdSetting']
         as Map<String, dynamic>;
-    this.id = application.containsKey('id') ? application['id'] as String : '';
-    _name = application.containsKey('name')
+    this.id = project.containsKey('id') ? project['id'] as String : '';
+    _name = project.containsKey('name')
         ? {
-            'ja': application['name']['ja'] as String,
-            'en': application['name']['en'] as String,
+            'ja': project['name']['ja'] as String,
+            'en': project['name']['en'] as String,
           }
         : {};
-    displayId = application.containsKey('display_id')
-        ? application['display_id'] as String
+    displayId = project.containsKey('display_id')
+        ? project['display_id'] as String
         : '';
-    createdAt = application.containsKey('created_at')
-        ? DateTime.parse(application['created_at'] as String)
+    createdAt = project.containsKey('created_at')
+        ? DateTime.parse(project['created_at'] as String)
         : DateTime.now();
-    updatedAt = application.containsKey('updated_at')
-        ? DateTime.parse(application['updated_at'] as String)
+    updatedAt = project.containsKey('updated_at')
+        ? DateTime.parse(project['updated_at'] as String)
         : DateTime.now();
     return this;
   }
 
-  static Future<List<HexabaseApplication>> all(String id) async {
+  static Future<List<HexabaseProject>> all(String id) async {
     final response = await HexabaseBase.query(
         GRAPHQL_GET_APPLICATION_AND_DATASTORE,
         variables: {
@@ -112,17 +112,17 @@ class HexabaseApplication extends HexabaseBase {
         });
     var ary = response.data!['getApplicationAndDataStore'] as List<dynamic>;
     return ary.map((data) {
-      var application = HexabaseApplication(id: data['application_id']);
-      application._name = {'ja': data['name'], 'en': data['name']};
-      application.displayId = data['display_id'];
+      var project = HexabaseProject(id: data['project_id']);
+      project._name = {'ja': data['name'], 'en': data['name']};
+      project.displayId = data['display_id'];
       var datastores = data['datastores'] as List<dynamic>;
-      application.datastores = datastores.map((data) {
+      project.datastores = datastores.map((data) {
         var datastore = HexabaseDatastore(
-            id: data['datastore_id'], projectId: data['application_id']);
+            id: data['datastore_id'], projectId: data['project_id']);
         datastore.name = data['name'];
         return datastore;
       }).toList();
-      return application;
+      return project;
     }).toList();
   }
 }

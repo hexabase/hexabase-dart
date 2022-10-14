@@ -23,19 +23,20 @@ class HexabaseWorkspace extends HexabaseBase {
 
   Future<List<HexabaseWorkspace>> all() async {
     final response = await HexabaseBase.query(GRAPHQL_WORKSPACES);
-    var workspaces = response.data?['workspaces']?['workspaces']
-        as List<Map<String, String>>;
+    var workspaces =
+        response.data?['workspaces']?['workspaces'] as List<Object?>;
     return workspaces.map((workspace) {
+      workspace = workspace as Map<String, dynamic>;
       return HexabaseWorkspace(
           id: workspace['workspace_id'], name: workspace['workspace_name']);
     }).toList();
   }
 
-  HexabaseApplication application(String id) {
-    return HexabaseApplication(id: id);
+  HexabaseProject project(String id) {
+    return HexabaseProject(id: id);
   }
 
-  Future<List<HexabaseApplication>> applications() async {
-    return HexabaseApplication.all(id!);
+  Future<List<HexabaseProject>> projects() async {
+    return HexabaseProject.all(id!);
   }
 }

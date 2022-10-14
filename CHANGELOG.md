@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.2.2
+
+- Change application to project
+
 ## 0.2.1
 
 - Change params method to query

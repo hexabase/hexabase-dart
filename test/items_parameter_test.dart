@@ -22,8 +22,8 @@ void main() {
   test('Make search conditions (equalTo)', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var application = client.application(id: keys['application']);
-    var datastore = application.datastore(id: keys['datastore']);
+    var project = client.project(id: keys['project']);
+    var datastore = project.datastore(id: keys['datastore']);
     var params = datastore.query();
     params.page(1).per(10).displayId(true);
     params.equalTo('name', '梨');
