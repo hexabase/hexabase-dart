@@ -25,12 +25,12 @@ void main() {
     var project = client.project(id: keys['project']);
     var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
-    var params = datastore.query();
-    params.page(1).per(10).displayId(true);
-    params.equalTo('name', '梨');
-    var items = await datastore.items(params);
+    var query = datastore.query();
+    query.page(1).per(10).displayId(true);
+    query.equalTo('name', '梨');
+    var items = await datastore.items(query: query);
     print(items);
-    var response = await datastore.itemsWithCount(params);
+    var response = await datastore.itemsWithCount();
     print(response.count);
   });
 
@@ -40,12 +40,12 @@ void main() {
     var project = client.project(id: keys['project']);
     var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
-    var params = datastore.query();
-    params.page(1).per(10).displayId(true);
-    params.greaterThanOrEqualTo("price", 500);
-    var items = await datastore.items(params);
+    var query = datastore.query();
+    query.page(1).per(10).displayId(true);
+    query.greaterThanOrEqualTo("price", 500);
+    var items = await datastore.items(query: query);
     print(items[0].get("price"));
-    var response = await datastore.itemsWithCount(params);
+    var response = await datastore.itemsWithCount(query: query);
     print(response.count);
   });
 
@@ -55,12 +55,12 @@ void main() {
     var project = client.project(id: keys['project']);
     var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
-    var params = datastore.query();
-    params.page(1).per(10).displayId(true);
-    params.lessThanOrEqualTo("price", 499);
-    var items = await datastore.items(params);
+    var query = datastore.query();
+    query.page(1).per(10).displayId(true);
+    query.lessThanOrEqualTo("price", 499);
+    var items = await datastore.items(query: query);
     print(items[0].get("price"));
-    var response = await datastore.itemsWithCount(params);
+    var response = await datastore.itemsWithCount(query: query);
     print(response.count);
   });
   test('Get search conditions with geather or equal w/ time', () async {
@@ -70,12 +70,12 @@ void main() {
     var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 11, 0, 0, 0);
-    var params = datastore.query();
-    params.page(1).per(10).displayId(true);
-    params.greaterThanOrEqualTo("salesDate", date);
-    var items = await datastore.items(params);
+    var query = datastore.query();
+    query.page(1).per(10).displayId(true);
+    query.greaterThanOrEqualTo("salesDate", date);
+    var items = await datastore.items(query: query);
     print(items[0].get("salesDate"));
-    var response = await datastore.itemsWithCount(params);
+    var response = await datastore.itemsWithCount(query: query);
     print(response.count);
   });
   test('Get search conditions with less or equal w/ time', () async {
@@ -85,12 +85,12 @@ void main() {
     var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 9, 0, 0, 0);
-    var params = datastore.query();
-    params.page(1).per(10).displayId(true);
-    params.lessThanOrEqualTo("salesDate", date);
-    var items = await datastore.items(params);
+    var query = datastore.query();
+    query.page(1).per(10).displayId(true);
+    query.lessThanOrEqualTo("salesDate", date);
+    var items = await datastore.items(query: query);
     print(items[0].get("salesDate"));
-    var response = await datastore.itemsWithCount(params);
+    var response = await datastore.itemsWithCount(query: query);
     print(response.count);
   });
   test('Get search conditions with geather w/ time', () async {
@@ -100,16 +100,16 @@ void main() {
     var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 10);
-    var params = datastore.query();
-    params.page(1).per(10).displayId(true);
-    params.greaterThan("salesDate", date);
-    var items = await datastore.items(params);
+    var query = datastore.query();
+    query.page(1).per(10).displayId(true);
+    query.greaterThan("salesDate", date);
+    var items = await datastore.items(query: query);
     print(items[0].get("salesDate"));
-    var response = await datastore.itemsWithCount(params);
+    var response = await datastore.itemsWithCount(query: query);
     print(response.count);
-    params.clear();
-    params.greaterThan("price", 500);
-    response = await datastore.itemsWithCount(params);
+    query.clear();
+    query.greaterThan("price", 500);
+    response = await datastore.itemsWithCount(query: query);
     print(response.count);
   });
   test('Get search conditions with less w/ time', () async {
@@ -119,16 +119,16 @@ void main() {
     var datastore = project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 10);
-    var params = datastore.query();
-    params.page(1).per(10).displayId(true);
-    params.lessThan("salesDate", date);
-    var items = await datastore.items(params);
+    var query = datastore.query();
+    query.page(1).per(10).displayId(true);
+    query.lessThan("salesDate", date);
+    var items = await datastore.items(query: query);
     print(items[0].get("salesDate"));
-    var response = await datastore.itemsWithCount(params);
+    var response = await datastore.itemsWithCount(query: query);
     print(response.count);
-    params.clear();
-    params.lessThan("price", 500);
-    response = await datastore.itemsWithCount(params);
+    query.clear();
+    query.lessThan("price", 500);
+    response = await datastore.itemsWithCount(query: query);
     print(response.count);
   });
 }

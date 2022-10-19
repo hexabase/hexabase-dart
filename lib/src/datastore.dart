@@ -19,16 +19,20 @@ class HexabaseDatastore extends HexabaseBase {
   late String? projectId;
   HexabaseDatastore({this.id, this.projectId}) : super();
 
-  Future<List<HexabaseItem>> items(HexabaseItemsParameters? params) async {
-    params = _getParams(params);
-    var res = await HexabaseItem.all(id!, params, projectId);
+  Future<List<HexabaseItem>> items({HexabaseItemsParameters? query}) async {
+    query = _getParams(query);
+    var res = await HexabaseItem.all(id!, query, projectId);
     return res.item2;
   }
 
+  HexabaseItem item() {
+    return HexabaseItem(datastoreId: id, projectId: projectId);
+  }
+
   Future<HBDataStoreResponseWithCount> itemsWithCount(
-      HexabaseItemsParameters? params) async {
-    params = _getParams(params);
-    var res = await HexabaseItem.all(id!, params, projectId);
+      {HexabaseItemsParameters? query}) async {
+    query = _getParams(query);
+    var res = await HexabaseItem.all(id!, query, projectId);
     return HBDataStoreResponseWithCount(res.item1, res.item2);
   }
 

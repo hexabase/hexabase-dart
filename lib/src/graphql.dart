@@ -142,3 +142,54 @@ String GRAPHQL_GET_APPLICATION_PROJECT_ID_SETTING = r'''
     }
   }
 ''';
+
+String GRAPHQL_DATASTORE_UPDATE_ITEM = r'''
+  mutation DatastoreUpdateItem(
+    $itemActionParameters: ItemActionParameters!
+    $itemId: String!
+    $datastoreId: String!
+    $projectId: String!
+  ) {
+    datastoreUpdateItem(
+      ItemActionParameters: $itemActionParameters
+      itemId: $itemId
+      datastoreId: $datastoreId
+      projectId: $projectId
+    )
+  }
+''';
+
+String GRAPHQL_DATASTORE_CREATE_NEW_ITEM = r'''
+  mutation DatastoreCreateNewItem($newItemActionParameters: NewItemActionParameters!, $datastoreId: String!, $projectId: String!) {
+    datastoreCreateNewItem(newItemActionParameters: $newItemActionParameters, datastoreId: $datastoreId, projectId: $projectId) {
+      error
+      history_id
+      item
+      item_id
+    }
+  }
+''';
+
+String GRAPHQL_GET_DATASTORE_ITEM_DETAILS = r'''
+  query GetDatastoreItemDetails($itemId: String!, $datastoreId: String!, $projectId: String, $datastoreItemDetailParams: DatastoreItemDetailParams) {
+    getDatastoreItemDetails(itemId: $itemId, datastoreId: $datastoreId, projectId: $projectId, datastoreItemDetailParams: $datastoreItemDetailParams) {
+      title
+      rev_no
+      field_values
+      status_list
+      item_actions
+      status_actions
+      status_order
+      status_action_order
+      item_action_order
+    }
+  }
+''';
+
+String GRAPHQL_DATASTORE_DELETE_ITEM = r'''
+  mutation DatastoreDeleteItem($deleteItemReq: DeleteItemReq!, $itemId: String!, $datastoreId: String!, $projectId: String!) {
+    datastoreDeleteItem(deleteItemReq: $deleteItemReq, itemId: $itemId, datastoreId: $datastoreId, projectId: $projectId) {
+      error
+    }
+  }
+''';

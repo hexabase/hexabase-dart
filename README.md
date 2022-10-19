@@ -102,6 +102,27 @@ query.equalTo('name', 'value');
 var items = await datastore.items(query.;
 ```
 
+#### Create new item
+
+```dart
+var item = datastore.item();
+item.set('name', 'value').set('price', 100);
+await item.save();
+```
+
+#### Update item
+
+```dart
+item.set('price', 110).set('salesDate', DateTime.now());
+await item.save();
+```
+
+#### Delete item
+
+```dart
+await item.delete();
+```
+
 ### Search conditions
 
 #### Equal to

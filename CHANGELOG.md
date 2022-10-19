@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.3.0
+
+- Support CRUD methods for datastore item
+
 ## 0.2.2
 
 - Change application to project
