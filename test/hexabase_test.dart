@@ -16,6 +16,12 @@ void main() {
     await client.login(keys['email'], keys['password']);
   });
 
+  test('Check login', () async {
+    var client = Hexabase();
+    final bol = await client.isLogin();
+    expect(bol, false);
+  });
+
   test('Not login error', () async {
     var client = Hexabase();
     try {

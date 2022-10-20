@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.4.3
+
+- Export some classes
+
 ## 0.4.2
 
 - Add login check method
