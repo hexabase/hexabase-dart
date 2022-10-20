@@ -69,15 +69,14 @@ class HexabaseItem extends HexabaseBase {
     return this;
   }
 
+  HexabaseItem action(String actionName) {
+    _action = actionName;
+    _updateStatus = true;
+    return this;
+  }
+
   HexabaseItem set(String name, dynamic value) {
     switch (name.toLowerCase()) {
-      case 'action':
-        _action = value;
-        _updateStatus = true;
-        break;
-      case 'status':
-        status = value as String;
-        break;
       case 'status_id':
         statusId = value as String?;
         break;
@@ -167,7 +166,12 @@ class HexabaseItem extends HexabaseBase {
     _setStatusActions(data['status_actions'] as Map<String, dynamic>);
     var params = data['field_values'] as Map<String, dynamic>;
     params.forEach((key, value) {
-      set(key, value['value']);
+      value = value as Map<String, dynamic>;
+      if (value['dataType'] == 'status') {
+        status = value['value'];
+      } else {
+        set(key, value['value']);
+      }
       _fieldTypes[key] = value['dataType'] as String;
     });
     return true;

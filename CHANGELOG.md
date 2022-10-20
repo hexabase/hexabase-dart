@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.4.1
+
+- Add action method in Item
+
 ## 0.4.0
 
 - Support Item actions

@@ -117,6 +117,15 @@ item.set('price', 110).set('salesDate', DateTime.now());
 await item.save();
 ```
 
+#### Update item status
+
+```dart
+item
+	.action('startReservation') // Action ID
+	.set('salesDate', DateTime.now()); // You can also update other fields
+await item.save();
+```
+
 #### Delete item
 
 ```dart

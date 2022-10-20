@@ -50,7 +50,7 @@ void main() {
     var item = datastore.item();
     item.set('name', 'スイカ').set('price', 100);
     await item.save();
-    item.set('action', 'startReservation');
+    item.action('startReservation').set('price', 110);
     await item.save();
     // await item.delete();
   });
