@@ -216,6 +216,7 @@ class HexabaseItem extends HexabaseBase {
   }
 
   void _setStatusActions(Map<String, dynamic> statusActions) {
+    _actions.clear();
     statusActions.forEach((key, value) {
       _actions.add(HexabaseItemAction(
         id: value["a_id"],

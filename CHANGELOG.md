@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.4.6
+
+- Bug fix
+
 ## 0.4.5
 
 - Bug fix
