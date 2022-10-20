@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.4.0
+
+- Support Item actions
+
 ## 0.3.0
 
 - Support CRUD methods for datastore item

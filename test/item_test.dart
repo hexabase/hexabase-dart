@@ -30,20 +30,28 @@ void main() {
     await item.save();
     await item.delete();
   });
-  test('Update item', () async {
+  test('Delete old items', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
     var datastore = project.datastore(id: keys['datastore']);
-    var res = await datastore.searchConditions();
     var query = datastore.query();
-    query.page(1).per(10).displayId(true);
-    query.equalTo('name', '梨');
+    query.equalTo('price', 100).per(100);
     var items = await datastore.items(query: query);
-    var item = items[0];
-    item.set('price', 140);
+    for (var item in items) {
+      await item.delete();
+    }
+  });
+  test('Change item status', () async {
+    var keys = await loadFile();
+    var client = Hexabase.instance;
+    var project = client.project(id: keys['project']);
+    var datastore = project.datastore(id: keys['datastore']);
+    var item = datastore.item();
+    item.set('name', 'スイカ').set('price', 100);
     await item.save();
-    item.set('price', 130);
+    item.set('action', 'startReservation');
     await item.save();
+    // await item.delete();
   });
 }

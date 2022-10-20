@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
-import 'package:hexabase/src/datastore.dart';
 import 'package:hexabase/src/graphql.dart';
 
 class HexabaseWorkspace extends HexabaseBase {

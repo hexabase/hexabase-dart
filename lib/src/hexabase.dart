@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:graphql/client.dart';
 import 'package:hexabase/hexabase.dart';
 
 import 'package:hexabase/src/user.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/workspace.dart';
-import 'package:hexabase/src/env.dart';
 
 class Hexabase {
   static late Hexabase _instance;

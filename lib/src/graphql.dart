@@ -193,3 +193,25 @@ String GRAPHQL_DATASTORE_DELETE_ITEM = r'''
     }
   }
 ''';
+
+String GRAPHQL_DATASTORE_EXECUTE_ITEM_ACTION = r'''
+  mutation DatastoreExecuteItemAction(
+    $projectId: String!,
+    $datastoreId: String!,
+    $actionId: String!,
+    $itemId: String!,
+    $itemActionParameters: ItemActionParameters!
+  ) {
+    datastoreExecuteItemAction(
+      projectId: $projectId,
+      datastoreId: $datastoreId,
+      actionId: $actionId,
+      itemId: $itemId,
+      itemActionParameters: $itemActionParameters
+    ) {
+      item_id
+      item
+      error
+    }
+  }
+''';

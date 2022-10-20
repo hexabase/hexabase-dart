@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/graphql.dart';
+import 'package:hexabase/src/item_action.dart';
 import 'package:hexabase/src/items_parameter.dart';
 import 'package:tuple/tuple.dart';
 
@@ -34,7 +34,12 @@ class HexabaseItem extends HexabaseBase {
   // groupsToPublish
   // accessKeyUpdates
   final Map<String, dynamic> _fields = {};
-
+  final Map<String, String> _fieldTypes = {};
+  final List<HexabaseItemAction> _statuses = [];
+  late String _action = "";
+  final List<HexabaseItemAction> _actions = [];
+  // private
+  var _updateStatus = false;
   HexabaseItem({this.id, this.datastoreId, this.projectId}) : super();
 
   static Future<Tuple2<int, List<HexabaseItem>>> all(String datastoreId,
@@ -59,10 +64,19 @@ class HexabaseItem extends HexabaseBase {
         items);
   }
 
+  HexabaseItem sets(Map<String, dynamic> fields) {
+    fields.forEach((key, value) => set(key, value));
+    return this;
+  }
+
   HexabaseItem set(String name, dynamic value) {
     switch (name.toLowerCase()) {
+      case 'action':
+        _action = value;
+        _updateStatus = true;
+        break;
       case 'status':
-        status = value as String?;
+        status = value as String;
         break;
       case 'status_id':
         statusId = value as String?;
@@ -148,12 +162,56 @@ class HexabaseItem extends HexabaseBase {
     var data =
         response.data!['getDatastoreItemDetails'] as Map<String, dynamic>;
     set('title', data['title']).set('rev_no', data['rev_no']);
+    // _setStatusList(data['status_list'] as Map<String, dynamic>);
+    // set actions
+    _setStatusActions(data['status_actions'] as Map<String, dynamic>);
     var params = data['field_values'] as Map<String, dynamic>;
-    params.forEach((key, value) => set(key, value['value']));
+    params.forEach((key, value) {
+      set(key, value['value']);
+      _fieldTypes[key] = value['dataType'] as String;
+    });
     return true;
   }
 
+  void _setStatusActions(Map<String, dynamic> statusActions) {
+    statusActions.forEach((key, value) {
+      _actions.add(HexabaseItemAction(
+        id: value["a_id"],
+        idLabel: value["status_id"],
+        name: key,
+        nameLabel: value["action_name"],
+        description: value["description"],
+        displayOrder: value["display_order"],
+        crudType: int.parse(value["crud_type"]),
+        nextStatusId: value["next_status_id"],
+      ));
+    });
+  }
+
+  /*
+  void _setStatusList(Map<String, dynamic> statuses) {
+    statuses.forEach((key, value) {
+      _statuses.add(HexabaseItemAction(
+          id: value["s_id"],
+          idLabel: value["status_id"],
+          name: key,
+          nameLabel: value["status_name"]));
+    });
+  }
+  */
+
+  List<HexabaseItemAction> actions() {
+    return _actions;
+  }
+
+  List<HexabaseItemAction> statues() {
+    return _statuses;
+  }
+
   Future<bool> update() async {
+    if (_updateStatus) {
+      return updateStatus();
+    }
     final response =
         await HexabaseBase.mutation(GRAPHQL_DATASTORE_UPDATE_ITEM, variables: {
       'projectId': projectId,
@@ -163,8 +221,26 @@ class HexabaseItem extends HexabaseBase {
     });
     var params =
         response.data!['datastoreUpdateItem']['item'] as Map<String, dynamic>;
-    params.forEach((key, value) => set(key, value));
+    sets(params);
     return true;
+  }
+
+  Future<bool> updateStatus() async {
+    var action = _actions.firstWhere((element) => element.name == _action);
+    var response = await HexabaseBase.mutation(
+        GRAPHQL_DATASTORE_EXECUTE_ITEM_ACTION,
+        variables: {
+          'projectId': projectId,
+          'datastoreId': datastoreId,
+          'itemId': id,
+          'actionId': action.id,
+          'itemActionParameters': toJson()
+        });
+    var params = response.data!['datastoreExecuteItemAction']['item']
+        as Map<String, dynamic>;
+    sets(params);
+    _updateStatus = false;
+    return getDetail();
   }
 
   Future<bool> delete(
