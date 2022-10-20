@@ -159,6 +159,9 @@ class HexabaseItem extends HexabaseBase {
     if (!_fields.containsKey(field) && defaultValue != null) {
       return defaultValue;
     }
+    if (_fields[field] is DateTime) {
+      return _fields[field] as DateTime;
+    }
     return DateTime.parse(_fields[field]);
   }
 
