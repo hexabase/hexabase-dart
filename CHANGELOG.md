@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.4.7
+
+- Change cache policy
+
 ## 0.4.6
 
 - Bug fix
