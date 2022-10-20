@@ -43,6 +43,11 @@ class Hexabase {
     return HexabaseUser.login(email, password);
   }
 
+  Future<bool> isLogin() async {
+    // TODO: Check token's validity
+    return token != null;
+  }
+
   HexabaseWorkspace workspace({String? id}) {
     return HexabaseWorkspace(id: id);
   }

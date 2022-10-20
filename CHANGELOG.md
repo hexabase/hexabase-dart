@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.4.2
+
+- Add login check method
+
 ## 0.4.1
 
 - Add action method in Item

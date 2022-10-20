@@ -230,7 +230,11 @@ class HexabaseItem extends HexabaseBase {
   }
 
   Future<bool> updateStatus() async {
-    var action = _actions.firstWhere((element) => element.name == _action);
+    var action = _actions.firstWhere((a) =>
+        a.name == _action ||
+        a.id == _action ||
+        a.idLabel == _action ||
+        a.nameLabel == _action);
     var response = await HexabaseBase.mutation(
         GRAPHQL_DATASTORE_EXECUTE_ITEM_ACTION,
         variables: {
@@ -240,10 +244,10 @@ class HexabaseItem extends HexabaseBase {
           'actionId': action.id,
           'itemActionParameters': toJson()
         });
+    _updateStatus = false;
     var params = response.data!['datastoreExecuteItemAction']['item']
         as Map<String, dynamic>;
     sets(params);
-    _updateStatus = false;
     return getDetail();
   }
 

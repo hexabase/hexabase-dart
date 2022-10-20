@@ -121,7 +121,7 @@ await item.save();
 
 ```dart
 item
-	.action('startReservation') // Action ID
+	.action('startReservation') // Action ID or Action Id or Action name (English) or Action name (Japanese)
 	.set('salesDate', DateTime.now()); // You can also update other fields
 await item.save();
 ```
