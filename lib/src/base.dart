@@ -13,6 +13,7 @@ class HexabaseBase {
         ? MutationOptions(
             document: gql(query),
             variables: variables,
+            fetchPolicy: FetchPolicy.noCache,
           )
         : MutationOptions(
             document: gql(query),
@@ -35,11 +36,11 @@ class HexabaseBase {
         ? QueryOptions(
             document: gql(query),
             variables: variables,
-            fetchPolicy: FetchPolicy.networkOnly,
+            fetchPolicy: FetchPolicy.noCache,
           )
         : QueryOptions(
             document: gql(query),
-            fetchPolicy: FetchPolicy.networkOnly,
+            fetchPolicy: FetchPolicy.noCache,
           );
     final QueryResult result =
         await HexabaseBase.client.graphQLClient.query(options);

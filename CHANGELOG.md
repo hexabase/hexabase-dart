@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 0.4.7 - 0.4.8
+## 0.4.7 - 0.4.9
 
 - Change cache policy
 
