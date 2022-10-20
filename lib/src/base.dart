@@ -35,11 +35,11 @@ class HexabaseBase {
         ? QueryOptions(
             document: gql(query),
             variables: variables,
-            fetchPolicy: FetchPolicy.cacheAndNetwork,
+            fetchPolicy: FetchPolicy.networkOnly,
           )
         : QueryOptions(
             document: gql(query),
-            fetchPolicy: FetchPolicy.cacheAndNetwork,
+            fetchPolicy: FetchPolicy.networkOnly,
           );
     final QueryResult result =
         await HexabaseBase.client.graphQLClient.query(options);
