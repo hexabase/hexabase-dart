@@ -127,6 +127,41 @@ class HexabaseItem extends HexabaseBase {
     return null;
   }
 
+  String getAsString(String field, {String? defaultValue}) {
+    if (!_fields.containsKey(field) && defaultValue != null) {
+      return defaultValue;
+    }
+    return _fields[field]! as String;
+  }
+
+  bool getAsBool(String field, {bool? defaultValue}) {
+    if (!_fields.containsKey(field) && defaultValue != null) {
+      return defaultValue;
+    }
+    return _fields[field]! as bool;
+  }
+
+  int getAsInt(String field, {int? defaultValue}) {
+    if (!_fields.containsKey(field) && defaultValue != null) {
+      return defaultValue;
+    }
+    return int.parse(_fields[field]);
+  }
+
+  double getAsDouble(String field, {double? defaultValue}) {
+    if (!_fields.containsKey(field) && defaultValue != null) {
+      return defaultValue;
+    }
+    return double.parse(_fields[field]);
+  }
+
+  DateTime getAsDateTime(String field, {DateTime? defaultValue}) {
+    if (!_fields.containsKey(field) && defaultValue != null) {
+      return defaultValue;
+    }
+    return DateTime.parse(_fields[field]);
+  }
+
   Future<bool> save() {
     if (id == null) {
       return create();

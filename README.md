@@ -132,6 +132,24 @@ await item.save();
 await item.delete();
 ```
 
+#### Get field data
+
+```dart
+item.get('name');
+item.getAsString('name');
+item.getAsInt('name');
+item.getAsDouble('name');
+item.getAsDateTime('name');
+item.getAsBool('name');
+
+// w/ default value
+item.getAsString('name', defaultValue: "Hello");
+item.getAsInt('name', defaultValue: 100);
+item.getAsDouble('name', defaultValue: 3.14156);
+item.getAsDateTime('name', defaultValue: DateTime.now());
+item.getAsBool('name', defaultValue: true);
+```
+
 ### Search conditions
 
 #### Equal to

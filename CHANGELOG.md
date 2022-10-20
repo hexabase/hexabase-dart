@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.4.4
+
+- Add getAs methods to item
+
 ## 0.4.3
 
 - Export some classes
