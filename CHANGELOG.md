@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.4.11
+
+- Bug fix in login check
+
 ## 0.4.10
 
 - Bug fix in getAs- in item
