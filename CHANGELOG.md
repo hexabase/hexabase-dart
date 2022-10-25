@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.4.10
+
+- Bug fix in getAs- in item
+
 ## 0.4.7 - 0.4.9
 
 - Change cache policy

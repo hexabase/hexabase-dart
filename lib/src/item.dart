@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/graphql.dart';
 import 'package:hexabase/src/item_action.dart';
 import 'package:hexabase/src/items_parameter.dart';
 import 'package:tuple/tuple.dart';
+import 'package:eventsource/eventsource.dart';
+// import "package:http/browser_client.dart";
 
 class HexabaseItem extends HexabaseBase {
   late String? id;
@@ -128,35 +131,40 @@ class HexabaseItem extends HexabaseBase {
   }
 
   String getAsString(String field, {String? defaultValue}) {
-    if (!_fields.containsKey(field) && defaultValue != null) {
+    if ((!_fields.containsKey(field) || _fields[field] == null) &&
+        defaultValue != null) {
       return defaultValue;
     }
     return _fields[field]! as String;
   }
 
   bool getAsBool(String field, {bool? defaultValue}) {
-    if (!_fields.containsKey(field) && defaultValue != null) {
+    if ((!_fields.containsKey(field) || _fields[field] == null) &&
+        defaultValue != null) {
       return defaultValue;
     }
     return _fields[field]! as bool;
   }
 
   int getAsInt(String field, {int? defaultValue}) {
-    if (!_fields.containsKey(field) && defaultValue != null) {
+    if ((!_fields.containsKey(field) || _fields[field] == null) &&
+        defaultValue != null) {
       return defaultValue;
     }
     return int.parse(_fields[field]);
   }
 
   double getAsDouble(String field, {double? defaultValue}) {
-    if (!_fields.containsKey(field) && defaultValue != null) {
+    if ((!_fields.containsKey(field) || _fields[field] == null) &&
+        defaultValue != null) {
       return defaultValue;
     }
     return double.parse(_fields[field]);
   }
 
   DateTime getAsDateTime(String field, {DateTime? defaultValue}) {
-    if (!_fields.containsKey(field) && defaultValue != null) {
+    if ((!_fields.containsKey(field) || _fields[field] == null) &&
+        defaultValue != null) {
       return defaultValue;
     }
     if (_fields[field] is DateTime) {
@@ -334,5 +342,19 @@ class HexabaseItem extends HexabaseBase {
     json['return_actionscript_logs'] = returnActionscriptLogs;
     json['disable_linker'] = disableLinker;
     return json;
+  }
+
+  void subscribe(Function(Event) f) async {
+    final channel = "item_view_${id}_${HexabaseBase.client.currentUser.id}";
+    final url = "https://sse.hexabase.com/sse?channel=${channel}";
+    print(url);
+    final eventSource = await EventSource.connect(url);
+    /*
+    final eventSource = await (kIsWeb
+        ? EventSource.connect(url, client: BrowserClient())
+        : EventSource.connect(url));
+    */
+    eventSource.listen(f);
+    return;
   }
 }
