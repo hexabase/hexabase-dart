@@ -9,6 +9,7 @@ import 'package:hexabase/src/items_parameter.dart';
 import 'package:tuple/tuple.dart';
 import 'package:eventsource/eventsource.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:mime/mime.dart';
 import 'dart:convert';
 // import "package:http/browser_client.dart";
 
@@ -41,7 +42,7 @@ class HexabaseFile extends HexabaseBase {
   Future<bool> create() async {
     var payload = {
       'filename': name,
-      'contentTypeFile': MediaType('image', 'png').toString(),
+      'contentTypeFile': lookupMimeType(file!.path),
       'content': base64.encode(file!.readAsBytesSync()),
       'field_id': fieldId,
       'item_id': item!.id,
