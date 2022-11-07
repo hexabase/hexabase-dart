@@ -16,6 +16,7 @@ dependencies:
   http: ^0.13.5
   http_parser: ^4.0.2
   jwt_decode: ^0.3.1
+  path: ^1.8.1
   tuple: ^2.0.0
 
 dev_dependencies:

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:hexabase/src/base.dart';
+import 'package:path/path.dart';
 import 'package:hexabase/src/graphql.dart';
 import 'package:hexabase/src/item_action.dart';
 import 'package:hexabase/src/items_parameter.dart';
