@@ -126,6 +126,22 @@ item
 await item.save();
 ```
 
+#### Upload image
+
+```dart
+item.set('picture', File('./test/test.png'));
+await item.save();
+```
+
+#### Upload images
+
+```dart
+item.add('picture', File('./test/test.png'));
+item.add('picture', File('./test/test2.png'));
+await item.save();
+```
+
+
 #### Delete item
 
 ```dart

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.5.0
+
+- Support file upload
+
 ## 0.4.11
 
 - Bug fix in login check

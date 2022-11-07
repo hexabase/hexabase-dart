@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:hexabase/src/base.dart';
+import 'package:path/path.dart';
 import 'package:hexabase/src/graphql.dart';
 import 'package:hexabase/src/item_action.dart';
 import 'package:hexabase/src/items_parameter.dart';
+import 'package:hexabase/src/file.dart';
 import 'package:tuple/tuple.dart';
 import 'package:eventsource/eventsource.dart';
 // import "package:http/browser_client.dart";
@@ -19,6 +22,8 @@ class HexabaseItem extends HexabaseBase {
   late String? updatedBy;
   late String? datastoreId;
   late String? projectId;
+  Map<String, dynamic> _uploadFile = {};
+
   int revNo = 0;
   late int? unread;
   // For update
@@ -52,7 +57,7 @@ class HexabaseItem extends HexabaseBase {
         variables: {
           'projectId': projectId,
           'datastoreId': datastoreId,
-          'getItemsParameters': params.toJson()
+          'getItemsParameters': await params.toJson()
         });
     var ary =
         response.data!['datastoreGetDatastoreItems']['items'] as List<dynamic>;
@@ -75,6 +80,23 @@ class HexabaseItem extends HexabaseBase {
   HexabaseItem action(String actionName) {
     _action = actionName;
     _updateStatus = true;
+    return this;
+  }
+
+  HexabaseBase add(String name, dynamic value) {
+    if (!_fields.containsKey(name)) {
+      _fields[name] = [value];
+      return this;
+    }
+    final val = _fields[name];
+    if (val is List) {
+      val.add(value);
+      _fields[name] = val;
+    } else if (val == null) {
+      _fields[name] = [value];
+    } else {
+      _fields[name] = [val, value];
+    }
     return this;
   }
 
@@ -187,10 +209,34 @@ class HexabaseItem extends HexabaseBase {
         variables: {
           'projectId': projectId,
           'datastoreId': datastoreId,
-          'newItemActionParameters': toJson()
+          'newItemActionParameters': await toJson()
         });
     id = response.data!['datastoreCreateNewItem']['item_id'] as String;
-    return getDetail();
+    await getDetail();
+    await uploadFile();
+    return true;
+  }
+
+  Future<bool> uploadFile() async {
+    if (!_uploadFile.isNotEmpty) return true;
+    List<Future<bool>> futureList = [];
+    _uploadFile.forEach((key, value) async {
+      if (value is List) {
+        for (var file in value) {
+          file = file as HexabaseFile;
+          file.item = this;
+          futureList.add(file.save());
+        }
+      } else {
+        value = value as HexabaseFile;
+        value.item = this;
+        futureList.add(value.save());
+      }
+    });
+    await Future.wait(futureList);
+    await update();
+    _uploadFile = {}; // Reset
+    return true;
   }
 
   Future<bool> getDetail() async {
@@ -268,7 +314,7 @@ class HexabaseItem extends HexabaseBase {
       'projectId': projectId,
       'datastoreId': datastoreId,
       'itemId': id,
-      'itemActionParameters': toJson()
+      'itemActionParameters': await toJson()
     });
     var params =
         response.data!['datastoreUpdateItem']['item'] as Map<String, dynamic>;
@@ -289,7 +335,7 @@ class HexabaseItem extends HexabaseBase {
           'datastoreId': datastoreId,
           'itemId': id,
           'actionId': action.id,
-          'itemActionParameters': toJson()
+          'itemActionParameters': await toJson()
         });
     _updateStatus = false;
     var params = response.data!['datastoreExecuteItemAction']['item']
@@ -322,14 +368,23 @@ class HexabaseItem extends HexabaseBase {
     return response.data!['datastoreDeleteItem']['error'] == null;
   }
 
-  Map<String, dynamic> toJson() {
+  Future<Map<String, dynamic>> toJson() async {
     var json = <String, dynamic>{};
     json["item"] = {};
-    _fields.forEach((key, value) {
+    _fields.forEach((key, value) async {
       if (value is DateTime) {
         value = value.toIso8601String();
+      } else if (value is File) {
+        final file =
+            HexabaseFile(name: basename(value.path), fieldId: key, file: value);
+        _uploadFile[key] = file;
+      } else if (value is List && value[0] is File) {
+        final list = value.map(
+            (e) => HexabaseFile(name: basename(e.path), fieldId: key, file: e));
+        _uploadFile[key] = list.toList();
+      } else {
+        json["item"][key] = value;
       }
-      json["item"][key] = value;
     });
     if (revNo > 0) {
       json['rev_no'] = revNo;
@@ -347,7 +402,6 @@ class HexabaseItem extends HexabaseBase {
   void subscribe(Function(Event) f) async {
     final channel = "item_view_${id}_${HexabaseBase.client.currentUser.id}";
     final url = "https://sse.hexabase.com/sse?channel=${channel}";
-    print(url);
     final eventSource = await EventSource.connect(url);
     /*
     final eventSource = await (kIsWeb

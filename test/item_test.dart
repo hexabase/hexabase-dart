@@ -30,13 +30,41 @@ void main() {
     await item.save();
     await item.delete();
   });
+  test('Create item with image', () async {
+    var keys = await loadFile();
+    var client = Hexabase.instance;
+    var project = client.project(id: keys['project']);
+    var datastore = project.datastore(id: keys['datastore']);
+    var item = datastore.item();
+    item.set('name', 'スイカ').set('price', 120);
+    item.set('picture', File('./test/test.png'));
+    await item.save();
+    //item.set('price', 110).set('salesDate', DateTime.now());
+    //await item.save();
+    // await item.delete();
+  });
+  test('Create item with images', () async {
+    var keys = await loadFile();
+    var client = Hexabase.instance;
+    var project = client.project(id: keys['project']);
+    var datastore = project.datastore(id: keys['datastore']);
+    var item = datastore.item();
+    item.set('name', 'スイカ').set('price', 120);
+    item.add('picture', File('./test/test.png'));
+    item.add('picture', File('./test/test2.png'));
+    await item.save();
+    //item.set('price', 110).set('salesDate', DateTime.now());
+    //await item.save();
+    // await item.delete();
+  });
+
   test('Delete old items', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
     var datastore = project.datastore(id: keys['datastore']);
     var query = datastore.query();
-    query.equalTo('price', 100).per(100);
+    query.equalTo('price', 120).per(100);
     var items = await datastore.items(query: query);
     for (var item in items) {
       await item.delete();

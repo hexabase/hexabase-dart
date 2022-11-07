@@ -70,6 +70,14 @@ class Hexabase {
     }
   }
 
+  String getRestEndPoint() {
+    if (env == HexabaseEnv.staging) {
+      return 'https://az-api.hexabase.com';
+    } else {
+      return 'https://api.hexabase.com';
+    }
+  }
+
   void init() {
     final httpLink = HttpLink(getEndpoint());
     final authLink = AuthLink(

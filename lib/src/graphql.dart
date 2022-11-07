@@ -215,3 +215,32 @@ String GRAPHQL_DATASTORE_EXECUTE_ITEM_ACTION = r'''
     }
   }
 ''';
+
+String GRAPHQL_CREATE_ITEM_FILE_ATTACHMENT = r'''
+  mutation CreateItemFileAttachment($payload: ItemFileAttachmentPl!) {
+		createItemFileAttachment(payload: $payload) {
+			_id
+			created_at
+			d_id
+			contentType
+      datastore_id
+			deleted
+			field_id
+			display_order
+			file_id
+			filename
+			filepath
+      item_id
+      i_id
+			mediaLink
+			p_id
+			timeCreated
+      size
+      selfLink
+			temporary
+			updated
+			w_id
+      user_id
+		}
+	}
+''';
