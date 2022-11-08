@@ -145,12 +145,17 @@ class HexabaseFile extends HexabaseBase {
     var response = await HexabaseBase.mutation(
         GRAPHQL_DATASTORE_DELETEITEM_FILE_ATTACHMENT_ITEM,
         variables: {'itemId': item!.id, 'fieldId': fieldId, 'fileId': id});
-    if (response.data != null) {
-      var data = response.data!['datastoreDeleteItemFileAttachmentItem']
-          as Map<String, dynamic>;
-      return data['success'] as bool;
+    if (response.data == null) {
+      return false;
     }
-    return false;
+    var data = response.data!['datastoreDeleteItemFileAttachmentItem']
+        as Map<String, dynamic>;
+    var bol = data['success'] as bool;
+    if (bol) {
+      item!.remove(fieldId!, this);
+      await item!.save();
+    }
+    return bol;
   }
 
   Map<String, dynamic> createJson() {

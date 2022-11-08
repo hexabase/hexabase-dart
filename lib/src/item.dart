@@ -80,7 +80,7 @@ class HexabaseItem extends HexabaseBase {
     return this;
   }
 
-  HexabaseBase add(String name, dynamic value) {
+  HexabaseItem add(String name, dynamic value) {
     if (!_fields.containsKey(name)) {
       _fields[name] = [_transValue(name, value)];
       return this;
@@ -93,6 +93,23 @@ class HexabaseItem extends HexabaseBase {
       _fields[name] = [_transValue(name, value)];
     } else {
       _fields[name] = [val, _transValue(name, value)];
+    }
+    return this;
+  }
+
+  HexabaseItem remove(String name, dynamic value) {
+    if (!_fields.containsKey(name)) {
+      return this;
+    }
+    var val = _fields[name];
+    if (val is List) {
+      val = val.where((v) {
+        if (v is HexabaseFile) {
+          return v.id != value.id;
+        }
+        return v != value;
+      }).toList();
+      _fields[name] = val;
     }
     return this;
   }
@@ -151,13 +168,16 @@ class HexabaseItem extends HexabaseBase {
         if (value is Map && value.containsKey('file_id')) {
           var file = HexabaseFile();
           file.sets(value as Map<String, dynamic>);
+          file.set('item', this);
           _fields[name] = file;
         } else if (value is List &&
+            value.isNotEmpty &&
             value[0] is Map &&
             value[0].containsKey('file_id')) {
           var files = value.map((data) {
             var file = HexabaseFile();
             file.sets(data as Map<String, dynamic>);
+            file.set('item', this);
             return file;
           }).toList();
           _fields[name] = files;
@@ -399,7 +419,9 @@ class HexabaseItem extends HexabaseBase {
         value = value.toIso8601String();
       } else if (value is HexabaseFile) {
         _uploadFile[key] = value;
-      } else if (value is List && value[0] is HexabaseFile) {
+      } else if (value is List &&
+          value.isNotEmpty &&
+          value[0] is HexabaseFile) {
         _uploadFile[key] = value;
       } else {
         json["item"][key] = value;

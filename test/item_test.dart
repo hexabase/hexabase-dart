@@ -50,10 +50,10 @@ void main() {
     var pictures = item.get('picture') as List<HexabaseFile>;
     var data = await pictures[0].download();
     expect(listEquals(data, file.data), isTrue);
-    //item.set('price', 110).set('salesDate', DateTime.now());
-    //await item.save();
+    item.set('price', 110).set('salesDate', DateTime.now());
+    await item.save();
     await pictures[0].delete();
-    // await item.delete();
+    await item.delete();
   });
   test('Create item with images', () async {
     var keys = await loadFile();

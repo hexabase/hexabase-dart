@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.5.4
+
+- Bug fix
+
 ## 0.5.3
 
 - Upload attachment file/files
