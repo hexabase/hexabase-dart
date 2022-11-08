@@ -2,6 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hexabase/hexabase.dart';
 import 'dart:io';
 import 'dart:convert';
+import 'package:path/path.dart';
+import 'package:hexabase/src/file.dart';
+import 'package:mime/mime.dart';
 
 void main() {
   dynamic loadFile() async {
@@ -37,7 +40,11 @@ void main() {
     var datastore = project.datastore(id: keys['datastore']);
     var item = datastore.item();
     item.set('name', 'スイカ').set('price', 120);
-    item.set('picture', File('./test/test.png'));
+    var filePath = './test/test.png';
+    var file = HexabaseFile(
+        name: basename(filePath), contentType: lookupMimeType(filePath));
+    file.data = File(filePath).readAsBytesSync();
+    item.set('picture', file);
     await item.save();
     //item.set('price', 110).set('salesDate', DateTime.now());
     //await item.save();
@@ -50,9 +57,19 @@ void main() {
     var datastore = project.datastore(id: keys['datastore']);
     var item = datastore.item();
     item.set('name', 'スイカ').set('price', 120);
-    item.add('picture', File('./test/test.png'));
-    item.add('picture', File('./test/test2.png'));
+    var filePaths = ['./test/test.png', './test/test2.png'];
+    for (var filePath in filePaths) {
+      var file = HexabaseFile(
+          name: basename(filePath), contentType: lookupMimeType(filePath));
+      file.data = File(filePath).readAsBytesSync();
+      item.add('picture', file);
+    }
     await item.save();
+    await item.getDetail();
+    var pictures = item.get('picture') as List<dynamic>;
+    var picture = pictures[0] as HexabaseFile;
+    // var data = await picture.download();
+    // print(data);
     //item.set('price', 110).set('salesDate', DateTime.now());
     //await item.save();
     // await item.delete();

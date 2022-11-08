@@ -1,4 +1,4 @@
-String GRAPHQL_LOGIN = r'''
+const String GRAPHQL_LOGIN = r'''
   mutation Login($loginInput: LoginInput!) {
     login(loginInput: $loginInput) {
       token
@@ -6,7 +6,7 @@ String GRAPHQL_LOGIN = r'''
   }
 ''';
 
-String GRAPHQL_LOGIN_AUTH0 = r'''
+const String GRAPHQL_LOGIN_AUTH0 = r'''
   mutation loginAuth0($auth0Input: Auth0Input!) {
     loginAuth0(auth0Input: $auth0Input) {
       token
@@ -14,7 +14,7 @@ String GRAPHQL_LOGIN_AUTH0 = r'''
   }
 ''';
 
-String GRAPHQL_WORKSPACES = r'''
+const String GRAPHQL_WORKSPACES = r'''
   query Workspaces {
     workspaces {
       workspaces {
@@ -26,7 +26,7 @@ String GRAPHQL_WORKSPACES = r'''
   }
 ''';
 
-String GRAPHQL_GET_APPLICATION_AND_DATASTORE = r'''
+const String GRAPHQL_GET_APPLICATION_AND_DATASTORE = r'''
   query GetApplicationAndDataStore($workspaceId: String!) {
     getApplicationAndDataStore(workspaceId: $workspaceId) {
       application_id
@@ -40,7 +40,7 @@ String GRAPHQL_GET_APPLICATION_AND_DATASTORE = r'''
   }
 ''';
 
-String GRAPHQL_APPLICAION_CREATE_PROJECT = r'''
+const String GRAPHQL_APPLICAION_CREATE_PROJECT = r'''
   mutation applicationCreateProject($createProjectParams: CreateProjectParams!) {
     applicationCreateProject(createProjectParams: $createProjectParams) {
       project_id
@@ -48,7 +48,7 @@ String GRAPHQL_APPLICAION_CREATE_PROJECT = r'''
   }
 ''';
 
-String GRAPHQL_UPDATE_PROJECT_NAME = r'''
+const String GRAPHQL_UPDATE_PROJECT_NAME = r'''
   mutation updateProjectName($payload: UpdateProjectNamePl!) {
     updateProjectName(payload: $payload) {
       success
@@ -57,7 +57,7 @@ String GRAPHQL_UPDATE_PROJECT_NAME = r'''
   }
 ''';
 
-String GRAPHQL_DELETE_PROJECT = r'''
+const String GRAPHQL_DELETE_PROJECT = r'''
   mutation deleteProject($payload: DeleteProjectPl!) {
     deleteProject(payload: $payload) {
       success
@@ -66,7 +66,7 @@ String GRAPHQL_DELETE_PROJECT = r'''
   }
 ''';
 
-String GRAPHQL_CREATE_WORKSPACE = r'''
+const String GRAPHQL_CREATE_WORKSPACE = r'''
   mutation createWorkspace($createWorkSpaceInput: CreateWorkSpaceInput!) {
     createWorkspace(createWorkSpaceInput: $createWorkSpaceInput) {
       w_id
@@ -74,7 +74,7 @@ String GRAPHQL_CREATE_WORKSPACE = r'''
   }
 ''';
 
-String GRAPHQL_GET_ITEM_SEARCH_CONDITIONS = r'''
+const String GRAPHQL_GET_ITEM_SEARCH_CONDITIONS = r'''
   query getItemSearchConditions ($datastoreId: String!, $projectId: String!) {
     getItemSearchConditions(datastoreId: $datastoreId, projectId: $projectId) {
       has_error
@@ -110,7 +110,7 @@ String GRAPHQL_GET_ITEM_SEARCH_CONDITIONS = r'''
 }
 ''';
 
-String GRAPHQL_DATASTORE_GET_DATASTORE_ITEMS = r'''
+const String GRAPHQL_DATASTORE_GET_DATASTORE_ITEMS = r'''
   mutation datastoreGetDatastoreItems(
     $projectId: String,
     $datastoreId: String!,
@@ -127,7 +127,7 @@ String GRAPHQL_DATASTORE_GET_DATASTORE_ITEMS = r'''
   }
 ''';
 
-String GRAPHQL_GET_APPLICATION_PROJECT_ID_SETTING = r'''
+const String GRAPHQL_GET_APPLICATION_PROJECT_ID_SETTING = r'''
   query getApplicationProjectIdSetting ($applicationId: String!) {
     getApplicationProjectIdSetting(applicationId: $applicationId) {
       p_id
@@ -143,7 +143,7 @@ String GRAPHQL_GET_APPLICATION_PROJECT_ID_SETTING = r'''
   }
 ''';
 
-String GRAPHQL_DATASTORE_UPDATE_ITEM = r'''
+const String GRAPHQL_DATASTORE_UPDATE_ITEM = r'''
   mutation DatastoreUpdateItem(
     $itemActionParameters: ItemActionParameters!
     $itemId: String!
@@ -159,7 +159,7 @@ String GRAPHQL_DATASTORE_UPDATE_ITEM = r'''
   }
 ''';
 
-String GRAPHQL_DATASTORE_CREATE_NEW_ITEM = r'''
+const String GRAPHQL_DATASTORE_CREATE_NEW_ITEM = r'''
   mutation DatastoreCreateNewItem($newItemActionParameters: NewItemActionParameters!, $datastoreId: String!, $projectId: String!) {
     datastoreCreateNewItem(newItemActionParameters: $newItemActionParameters, datastoreId: $datastoreId, projectId: $projectId) {
       error
@@ -170,7 +170,7 @@ String GRAPHQL_DATASTORE_CREATE_NEW_ITEM = r'''
   }
 ''';
 
-String GRAPHQL_GET_DATASTORE_ITEM_DETAILS = r'''
+const String GRAPHQL_GET_DATASTORE_ITEM_DETAILS = r'''
   query GetDatastoreItemDetails($itemId: String!, $datastoreId: String!, $projectId: String, $datastoreItemDetailParams: DatastoreItemDetailParams) {
     getDatastoreItemDetails(itemId: $itemId, datastoreId: $datastoreId, projectId: $projectId, datastoreItemDetailParams: $datastoreItemDetailParams) {
       title
@@ -186,7 +186,7 @@ String GRAPHQL_GET_DATASTORE_ITEM_DETAILS = r'''
   }
 ''';
 
-String GRAPHQL_DATASTORE_DELETE_ITEM = r'''
+const String GRAPHQL_DATASTORE_DELETE_ITEM = r'''
   mutation DatastoreDeleteItem($deleteItemReq: DeleteItemReq!, $itemId: String!, $datastoreId: String!, $projectId: String!) {
     datastoreDeleteItem(deleteItemReq: $deleteItemReq, itemId: $itemId, datastoreId: $datastoreId, projectId: $projectId) {
       error
@@ -216,7 +216,7 @@ String GRAPHQL_DATASTORE_EXECUTE_ITEM_ACTION = r'''
   }
 ''';
 
-String GRAPHQL_CREATE_ITEM_FILE_ATTACHMENT = r'''
+const String GRAPHQL_CREATE_ITEM_FILE_ATTACHMENT = r'''
   mutation CreateItemFileAttachment($payload: ItemFileAttachmentPl!) {
 		createItemFileAttachment(payload: $payload) {
 			_id
@@ -241,6 +241,14 @@ String GRAPHQL_CREATE_ITEM_FILE_ATTACHMENT = r'''
 			updated
 			w_id
       user_id
+		}
+	}
+''';
+
+const String GRAPHQL_GET_DOWNLOAD_FILE = r'''
+  query GetDownloadFile($id: String!) {
+		getDownloadFile(id: $id){
+			
 		}
 	}
 ''';

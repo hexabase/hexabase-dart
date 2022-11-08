@@ -1,8 +1,5 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:hexabase/src/base.dart';
-import 'package:path/path.dart';
 import 'package:hexabase/src/graphql.dart';
 import 'package:hexabase/src/item_action.dart';
 import 'package:hexabase/src/items_parameter.dart';
@@ -85,22 +82,33 @@ class HexabaseItem extends HexabaseBase {
 
   HexabaseBase add(String name, dynamic value) {
     if (!_fields.containsKey(name)) {
-      _fields[name] = [value];
+      _fields[name] = [_transValue(name, value)];
       return this;
     }
     final val = _fields[name];
     if (val is List) {
-      val.add(value);
+      val.add(_transValue(name, value));
       _fields[name] = val;
     } else if (val == null) {
-      _fields[name] = [value];
+      _fields[name] = [_transValue(name, value)];
     } else {
-      _fields[name] = [val, value];
+      _fields[name] = [val, _transValue(name, value)];
     }
     return this;
   }
 
+  dynamic _transValue(String name, dynamic value) {
+    if (value is HexabaseFile) {
+      value.fieldId = name;
+      value.item = this;
+      return value;
+    }
+    return value;
+  }
+
   HexabaseItem set(String name, dynamic value) {
+    value = _transValue(name, value);
+
     switch (name.toLowerCase()) {
       case 'status_id':
         statusId = value as String?;
@@ -140,7 +148,22 @@ class HexabaseItem extends HexabaseBase {
         unread = int.parse(value);
         break;
       default:
-        _fields[name] = value;
+        if (value is Map && value.containsKey('file_id')) {
+          var file = HexabaseFile();
+          file.sets(value as Map<String, dynamic>);
+          _fields[name] = file;
+        } else if (value is List &&
+            value[0] is Map &&
+            value[0].containsKey('file_id')) {
+          var files = value.map((data) {
+            var file = HexabaseFile();
+            file.sets(data as Map<String, dynamic>);
+            return file;
+          }).toList();
+          _fields[name] = files;
+        } else {
+          _fields[name] = value;
+        }
     }
     return this;
   }
@@ -224,12 +247,12 @@ class HexabaseItem extends HexabaseBase {
       if (value is List) {
         for (var file in value) {
           file = file as HexabaseFile;
-          file.item = this;
+          file.set('item', this);
           futureList.add(file.save());
         }
       } else {
         value = value as HexabaseFile;
-        value.item = this;
+        value.set('item', this);
         futureList.add(value.save());
       }
     });
@@ -374,14 +397,10 @@ class HexabaseItem extends HexabaseBase {
     _fields.forEach((key, value) async {
       if (value is DateTime) {
         value = value.toIso8601String();
-      } else if (value is File) {
-        final file =
-            HexabaseFile(name: basename(value.path), fieldId: key, file: value);
-        _uploadFile[key] = file;
-      } else if (value is List && value[0] is File) {
-        final list = value.map(
-            (e) => HexabaseFile(name: basename(e.path), fieldId: key, file: e));
-        _uploadFile[key] = list.toList();
+      } else if (value is HexabaseFile) {
+        _uploadFile[key] = value;
+      } else if (value is List && value[0] is HexabaseFile) {
+        _uploadFile[key] = value;
       } else {
         json["item"][key] = value;
       }

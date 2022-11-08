@@ -52,6 +52,40 @@ class HexabaseBase {
     return result;
   }
 
+  static Future<dynamic> get(String path, dynamic query,
+      {bool auth = true, bool binary = false}) async {
+    if (auth && client.token == null) {
+      throw Exception('Not authenticated');
+    }
+    final dio = Dio();
+    dio.interceptors.add(LogInterceptor(responseBody: false));
+    // dio.options.contentType = Headers.formUrlEncodedContentType;
+    /*
+    if (binary) {
+      data = FormData.fromMap({
+        'filename': data['filename'],
+        'file': MultipartFile.fromBytes(data['file'],
+            filename: data['filename'], contentType: MediaType('image', 'png')),
+      });
+    }
+    final response = await dio.download(
+      '${client.getRestEndPoint()}$path',
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer ${client.token}',
+        },
+      ),
+    );
+
+    print(response.data);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return response.data;
+    } else {
+      throw Exception('Failed to load post');
+    }
+    */
+  }
+
   /*
   static Future<dynamic> post(String path, dynamic data,
       {bool auth = true, bool multipart = false}) async {

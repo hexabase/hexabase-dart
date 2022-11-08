@@ -9,3 +9,4 @@ export 'src/item_action.dart';
 export 'src/user.dart';
 export 'src/workspace.dart';
 export 'src/item.dart';
+export 'src/file.dart';
