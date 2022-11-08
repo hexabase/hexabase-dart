@@ -123,6 +123,8 @@ class HexabaseFile extends HexabaseBase {
   }
 
   Future<dynamic> download() async {
+    data = await HexabaseBase.get('/api/v0/files/$id', binary: true);
+    return data;
     /*
     var response = await HexabaseBase.query(GRAPHQL_GET_DOWNLOAD_FILE,
         variables: {'id': id});
@@ -131,6 +133,24 @@ class HexabaseFile extends HexabaseBase {
     }
     return false;
     */
+  }
+
+  Future<bool> delete() async {
+    /*
+    REST version
+    await HexabaseBase.delete(
+        '/api/v0/items/${item!.id}/fields/$fieldId/attachments/$id');
+    return true;
+    */
+    var response = await HexabaseBase.mutation(
+        GRAPHQL_DATASTORE_DELETEITEM_FILE_ATTACHMENT_ITEM,
+        variables: {'itemId': item!.id, 'fieldId': fieldId, 'fileId': id});
+    if (response.data != null) {
+      var data = response.data!['datastoreDeleteItemFileAttachmentItem']
+          as Map<String, dynamic>;
+      return data['success'] as bool;
+    }
+    return false;
   }
 
   Map<String, dynamic> createJson() {

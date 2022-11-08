@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hexabase/hexabase.dart';
 import 'dart:io';
 import 'dart:convert';
@@ -46,8 +47,12 @@ void main() {
     file.data = File(filePath).readAsBytesSync();
     item.set('picture', file);
     await item.save();
+    var pictures = item.get('picture') as List<HexabaseFile>;
+    var data = await pictures[0].download();
+    expect(listEquals(data, file.data), isTrue);
     //item.set('price', 110).set('salesDate', DateTime.now());
     //await item.save();
+    await pictures[0].delete();
     // await item.delete();
   });
   test('Create item with images', () async {
@@ -68,11 +73,10 @@ void main() {
     await item.getDetail();
     var pictures = item.get('picture') as List<dynamic>;
     var picture = pictures[0] as HexabaseFile;
-    // var data = await picture.download();
-    // print(data);
-    //item.set('price', 110).set('salesDate', DateTime.now());
-    //await item.save();
-    // await item.delete();
+    var data = await picture.download();
+    item.set('price', 110).set('salesDate', DateTime.now());
+    await item.save();
+    await item.delete();
   });
 
   test('Delete old items', () async {

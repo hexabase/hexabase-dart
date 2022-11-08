@@ -252,3 +252,20 @@ const String GRAPHQL_GET_DOWNLOAD_FILE = r'''
 		}
 	}
 ''';
+
+const String GRAPHQL_DATASTORE_DELETEITEM_FILE_ATTACHMENT_ITEM = r'''
+  mutation DatastoreDeleteItemFileAttachmentItem(
+    $fileId: String!
+    $fieldId: String!
+    $itemId: String!
+  ) {
+    datastoreDeleteItemFileAttachmentItem(
+      fileId: $fileId
+      fieldId: $fieldId
+      itemId: $itemId
+    ) {
+			data
+			success
+		}
+	}
+''';

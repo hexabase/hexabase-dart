@@ -2,6 +2,7 @@ import './hexabase.dart';
 import 'package:graphql/client.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:uri/uri.dart';
 
 class HexabaseBase {
   static late Hexabase client;
@@ -52,38 +53,64 @@ class HexabaseBase {
     return result;
   }
 
-  static Future<dynamic> get(String path, dynamic query,
-      {bool auth = true, bool binary = false}) async {
+  static Future<dynamic> get(String path,
+      {Map<String, String>? query,
+      bool auth = true,
+      bool binary = false}) async {
     if (auth && client.token == null) {
       throw Exception('Not authenticated');
     }
-    final dio = Dio();
-    dio.interceptors.add(LogInterceptor(responseBody: false));
-    // dio.options.contentType = Headers.formUrlEncodedContentType;
-    /*
-    if (binary) {
-      data = FormData.fromMap({
-        'filename': data['filename'],
-        'file': MultipartFile.fromBytes(data['file'],
-            filename: data['filename'], contentType: MediaType('image', 'png')),
-      });
+    var uri = Uri.parse('${client.getRestEndPoint()}$path');
+    if (query != null) {
+      uri = uri.replace(queryParameters: query);
     }
-    final response = await dio.download(
-      '${client.getRestEndPoint()}$path',
-      options: Options(
-        headers: {
-          'Authorization': 'Bearer ${client.token}',
-        },
-      ),
-    );
 
+    final dio = Dio();
+    // dio.interceptors.add(LogInterceptor(responseBody: false));
+    var options = Options(
+      headers: {
+        'Authorization': 'Bearer ${HexabaseBase.client.token}',
+        'Content-Type': 'application/json',
+      },
+    );
+    if (binary) {
+      options.responseType = ResponseType.bytes;
+    }
+    var response = await dio.get(uri.toString(), options: options);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return response.data;
+    } else {
+      throw Exception('Failed to load get');
+    }
+  }
+
+  static Future<dynamic> delete(
+    String path, {
+    Map<String, String>? query,
+    bool auth = true,
+  }) async {
+    if (auth && client.token == null) {
+      throw Exception('Not authenticated');
+    }
+    var uri = Uri.parse('${client.getRestEndPoint()}$path');
+    if (query != null) {
+      uri = uri.replace(queryParameters: query);
+    }
+
+    final dio = Dio();
+    // dio.interceptors.add(LogInterceptor(responseBody: false));
+    var options = Options(
+      headers: {
+        'Authorization': 'Bearer ${HexabaseBase.client.token}',
+      },
+    );
+    var response = await dio.delete(uri.toString(), options: options);
     print(response.data);
     if (response.statusCode == 200 || response.statusCode == 201) {
       return response.data;
     } else {
-      throw Exception('Failed to load post');
+      throw Exception('Failed to load delete');
     }
-    */
   }
 
   /*

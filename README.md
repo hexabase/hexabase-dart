@@ -126,21 +126,44 @@ item
 await item.save();
 ```
 
-#### Upload image
+#### Upload file
 
 ```dart
-item.set('picture', File('./test/test.png'));
+var filePath = './test/test.png';
+var file = HexabaseFile(
+		name: basename(filePath), contentType: lookupMimeType(filePath));
+file.data = File(filePath).readAsBytesSync();
+item.set('picture', file);
 await item.save();
 ```
 
-#### Upload images
+#### Upload files
 
 ```dart
-item.add('picture', File('./test/test.png'));
-item.add('picture', File('./test/test2.png'));
+var filePaths = ['./test/test.png', './test/test2.png'];
+for (var filePath in filePaths) {
+	var file = HexabaseFile(
+			name: basename(filePath), contentType: lookupMimeType(filePath));
+	file.data = File(filePath).readAsBytesSync();
+	item.add('picture', file);
+}
 await item.save();
 ```
 
+#### Download file
+
+It returns multiple everytime. `data` is Unit8List;
+
+```dart
+var pictures = item.get('picture') as List<HexabaseFile>;
+var data = await pictures[0].download();
+```
+
+#### Delete file
+
+```dart
+await pictures[0].delete();
+```
 
 #### Delete item
 

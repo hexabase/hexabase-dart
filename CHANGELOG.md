@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.5.3
+
+- Upload attachment file/files
+- Download attachment file
+- Delete attachment file
+
 ## 0.5.0 & 0.5.1
 
 - Support file upload
