@@ -125,7 +125,7 @@ class HexabaseItem extends HexabaseBase {
 
   HexabaseItem set(String name, dynamic value) {
     value = _transValue(name, value);
-    if (value == null) return;
+    if (value == null) return this;
     switch (name.toLowerCase()) {
       case 'status_id':
         statusId = value as String?;
