@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.5.6
+
+- Bug fix
+
 ## 0.5.5
 
 - Remove dependency flutter from pubspec.yaml
