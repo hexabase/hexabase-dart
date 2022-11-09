@@ -48,8 +48,9 @@ class HexabaseFile extends HexabaseBase {
     return this;
   }
 
-  HexabaseFile set(String name, dynamic value) {
-    switch (name.toLowerCase()) {
+  HexabaseFile set(String key, dynamic value) {
+    if (value == null) return this;
+    switch (key.toLowerCase()) {
       case 'name':
       case 'filename':
         name = value as String;
@@ -158,6 +159,7 @@ class HexabaseFile extends HexabaseBase {
     var bol = data['success'] as bool;
     if (bol) {
       item!.remove(fieldId!, this);
+      item!.remove(fieldId!, id);
       await item!.save();
     }
     return bol;
@@ -183,7 +185,6 @@ class HexabaseFile extends HexabaseBase {
         variables: {'payload': createJson()});
     if (response.data != null) {
       id = response.data!['createItemFileAttachment']['_id'];
-      item!.add(fieldId!, id);
       return true;
     }
     return false;

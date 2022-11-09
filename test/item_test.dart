@@ -72,10 +72,12 @@ void main() {
       item.add('picture', file);
     }
     await item.save();
-    await item.getDetail();
     var pictures = item.get('picture') as List<dynamic>;
+    expect(pictures.length == 2, true);
     var picture = pictures[0] as HexabaseFile;
+    expect(picture.name == 'test.png', true);
     var data = await picture.download();
+    expect(listEquals(data, File(filePaths[0]).readAsBytesSync()), true);
     item.set('price', 110).set('salesDate', DateTime.now());
     await item.save();
     await item.delete();

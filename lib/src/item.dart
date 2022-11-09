@@ -261,7 +261,7 @@ class HexabaseItem extends HexabaseBase {
   }
 
   Future<bool> uploadFile() async {
-    if (!_uploadFile.isNotEmpty) return true;
+    if (_uploadFile.isEmpty) return true;
     List<Future<bool>> futureList = [];
     _uploadFile.forEach((key, value) async {
       if (value is List) {
@@ -277,6 +277,19 @@ class HexabaseItem extends HexabaseBase {
       }
     });
     await Future.wait(futureList);
+    _uploadFile.forEach((key, value) {
+      if (value is List) {
+        set(
+            key,
+            value.map((e) {
+              e = e as HexabaseFile;
+              return e.id;
+            }).toList());
+      } else {
+        value = value as HexabaseFile;
+        set(key, value.id);
+      }
+    });
     await update();
     _uploadFile = {}; // Reset
     return true;
@@ -408,7 +421,7 @@ class HexabaseItem extends HexabaseBase {
       'itemId': id,
       'deleteItemReq': params
     });
-    return response.data!['datastoreDeleteItem']['error'] == null;
+    return true;
   }
 
   Future<Map<String, dynamic>> toJson() async {
