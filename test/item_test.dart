@@ -43,7 +43,8 @@ void main() {
     item.set('name', 'スイカ').set('price', 120);
     var filePath = './test/test.png';
     var file = HexabaseFile(
-        name: basename(filePath), contentType: lookupMimeType(filePath));
+        name: basename(filePath),
+        contentType: lookupMimeType(filePath) ?? "application/octet-stream");
     file.data = File(filePath).readAsBytesSync();
     item.set('picture', file);
     await item.save();
@@ -65,7 +66,8 @@ void main() {
     var filePaths = ['./test/test.png', './test/test2.png'];
     for (var filePath in filePaths) {
       var file = HexabaseFile(
-          name: basename(filePath), contentType: lookupMimeType(filePath));
+          name: basename(filePath),
+          contentType: lookupMimeType(filePath) ?? "application/octet-stream");
       file.data = File(filePath).readAsBytesSync();
       item.add('picture', file);
     }

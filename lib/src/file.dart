@@ -15,7 +15,7 @@ class HexabaseFile extends HexabaseBase {
   late String? projectId;
   late String? workspaceId;
   late String? datastoreId;
-  late String? contentType;
+  late String contentType = "application/octet-stream";
   late DateTime? createdAt;
   late bool? deleted;
   late int displayOrder = 0;
@@ -27,7 +27,12 @@ class HexabaseFile extends HexabaseBase {
   late DateTime? updatedAt;
   late String? userId;
 
-  HexabaseFile({this.id, this.name, this.fieldId, this.item, this.contentType})
+  HexabaseFile(
+      {this.id,
+      this.name,
+      this.fieldId,
+      this.item,
+      this.contentType = "application/octet-stream"})
       : super();
 
   Future<bool> save() {

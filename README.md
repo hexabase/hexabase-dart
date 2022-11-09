@@ -42,45 +42,42 @@ var workspaces = await client.workspace.all();
 var workspace = client.workspace(id: 'WORKSPACE_ID');
 ```
 
-### Application
+### Project
 
-#### Get all applications
+#### Get all projects
 
 ```dart
-var applications = await workspace.applications();
-print(applications[0].id);
-print(applications[0].datastores[0].id);
+var projects = await workspace.projects();
+print(projects[0].id);
+print(projects[0].datastores[0].id);
 ```
 
-#### Get application
+#### Get project
 
 ```dart
-var application = client.application(id: 'APPLICATION_ID');
+var project = client.project(id: 'PROJECT_ID');
 ```
 
-#### Create application
+#### Create project
 
 ```dart
-var application = client.application();
-application.name = {
-	HBAppName.ja: 'テストアプリ',
-	HBAppName.en: 'Test App',
-};
-await application.save();
+var project = client.project();
+project.name('ja', 'テストアプリ').name('en', 'Test App');
+await project.save();
 ```
 
-#### Update application
+#### Update project
 
 ```dart
-var application = client.application(id: 'APPLICATION_ID');
-application.name[HBAppName.en] = 'Test app v2';
-await application.save();
+var project = client.project(id: 'PROJECT_ID');
+project.name('en', 'Test app v2');
+await project.save();
 ```
 
-#### Delete application
+#### Delete project
 
 ```dart
-await application.delete();
+await project.delete();
 ```
 
 ### Datastore
@@ -88,8 +85,8 @@ await application.delete();
 #### Get datastore
 
 ```dart
-var application = client.application(id: 'APPLICATION_ID');
-var datastore = application.datastore(id: 'DATASTORE_ID');
+var project = client.project(id: 'PROJECT_ID');
+var datastore = project.datastore(id: 'DATASTORE_ID');
 ```
 
 ### Datastore Item
