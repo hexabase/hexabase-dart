@@ -13,7 +13,7 @@ class Hexabase {
   late HexabaseWorkspace _workspace;
   late HexabaseProject _project;
   String? token;
-  late HexabaseUser? currentUser;
+  HexabaseUser? currentUser;
   late DateTime expiryDate;
   late GraphQLClient graphQLClient;
   bool _initialized = false;
