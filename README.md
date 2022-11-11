@@ -20,10 +20,37 @@ After initialized the client, you can take client object anytime.
 var client = Hexabase.instance;
 ```
 
-### Log in 
+### Authentication
+
+#### Log in 
 
 ```dart
 await client.auth.login('you@example.com', 'your_secure_password');
+```
+
+#### Save session to localStorage, NSUserDefaults or SharedPreferences
+
+```dart
+// Save to local
+client.persistence = Hexabase.persistenceLocal;
+await client.login(keys['email'], keys['password']);
+```
+
+And next time, you should check login status like below.
+
+```dart
+if (await client.isLogin()) {
+	// Login
+} else {
+	// Not login, or session is invalid.
+}
+```
+
+#### Log out
+
+```dart
+var user = await client.getCurrentUser();
+await user.logout();
 ```
 
 ### Workspace

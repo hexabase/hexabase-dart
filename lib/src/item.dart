@@ -454,7 +454,7 @@ class HexabaseItem extends HexabaseBase {
   }
 
   void subscribe(Function(Event) f) async {
-    final channel = "item_view_${id}_${HexabaseBase.client.currentUser.id}";
+    final channel = "item_view_${id}_${HexabaseBase.client.currentUser!.id}";
     final url = "https://sse.hexabase.com/sse?channel=${channel}";
     final eventSource = await EventSource.connect(url);
     /*

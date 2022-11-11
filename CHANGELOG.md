@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.6.0
+
+- Support save token to local storage
+- Log out
+- Check login status
+
 ## 0.5.6 - 0.5.8
 
 - Bug fix

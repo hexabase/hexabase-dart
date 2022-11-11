@@ -269,3 +269,12 @@ const String GRAPHQL_DATASTORE_DELETEITEM_FILE_ATTACHMENT_ITEM = r'''
 		}
 	}
 ''';
+
+const String GRAPHQL_LOGOUT = r'''
+  mutation Logout {
+    logout {
+      data
+      success
+    }
+  }
+''';

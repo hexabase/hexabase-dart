@@ -13,10 +13,14 @@ class Hexabase {
   late HexabaseWorkspace _workspace;
   late HexabaseProject _project;
   String? token;
-  late HexabaseUser currentUser;
+  late HexabaseUser? currentUser;
   late DateTime expiryDate;
   late GraphQLClient graphQLClient;
   bool _initialized = false;
+
+  static int persistenceNone = 0;
+  static int persistenceLocal = 1;
+  int persistence = Hexabase.persistenceNone;
 
   static Hexabase get instance {
     assert(
@@ -45,8 +49,33 @@ class Hexabase {
     return HexabaseUser.login(email, password);
   }
 
+  Future<bool> loginAuth0(String token) {
+    return HexabaseUser.loginAuth0(token);
+  }
+
+  Future<bool> logout() async {
+    if (currentUser != null) {
+      return currentUser!.logout();
+    }
+    return true;
+  }
+
+  Future<bool> setToken(String token) {
+    return HexabaseUser.setToken(token);
+  }
+
+  Future<HexabaseUser?> getCurrentUser() {
+    return HexabaseUser.getCurrentUser();
+  }
+
   Future<bool> isLogin() async {
-    // TODO: Check token's validity
+    try {
+      await getCurrentUser();
+      await workspaces();
+    } catch (e) {
+      await currentUser?.logout();
+      return false;
+    }
     return token != null;
   }
 
