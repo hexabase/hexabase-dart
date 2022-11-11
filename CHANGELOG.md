@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.6.1
+
+- Bug fix
+
 ## 0.6.0
 
 - Support save token to local storage

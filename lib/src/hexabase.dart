@@ -73,7 +73,9 @@ class Hexabase {
       await getCurrentUser();
       await workspaces();
     } catch (e) {
-      await currentUser?.logout();
+      if (currentUser != null) {
+        await currentUser?.logout();
+      }
       return false;
     }
     return token != null;
