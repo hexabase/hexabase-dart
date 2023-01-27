@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.6.3
+
+Support full text search
+
 ## 0.6.1 - 0.6.2
 
 - Bug fix

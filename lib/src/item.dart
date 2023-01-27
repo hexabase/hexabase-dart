@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/graphql.dart';
 import 'package:hexabase/src/item_action.dart';
@@ -6,7 +7,6 @@ import 'package:hexabase/src/items_parameter.dart';
 import 'package:hexabase/src/file.dart';
 import 'package:tuple/tuple.dart';
 import 'package:eventsource/eventsource.dart';
-// import "package:http/browser_client.dart";
 
 class HexabaseItem extends HexabaseBase {
   late String? id;
@@ -43,6 +43,7 @@ class HexabaseItem extends HexabaseBase {
   final List<HexabaseItemAction> _statuses = [];
   late String _action = "";
   final List<HexabaseItemAction> _actions = [];
+
   // private
   var _updateStatus = false;
   HexabaseItem({this.id, this.datastoreId, this.projectId}) : super();
@@ -66,6 +67,53 @@ class HexabaseItem extends HexabaseBase {
     }).toList();
     return Tuple2(
         response.data!['datastoreGetDatastoreItems']['totalItems'] as int,
+        items);
+  }
+
+  static Future<Tuple2<int, List<HexabaseItem>>> search(String datastoreId,
+      HBSearchType type, String query, Map<String, dynamic> itemSearchParams,
+      {String? projectId, String? fieldId}) async {
+    var category = '';
+    switch (type) {
+      case HBSearchType.item:
+        category = 'items';
+        break;
+      case HBSearchType.file:
+        category = 'files';
+        break;
+      case HBSearchType.history:
+        category = 'histories';
+        break;
+    }
+    var payload = {
+      'datastore_id': datastoreId,
+      'query': query,
+      'return_item_list': true,
+      'category': category,
+      'item_search_params': itemSearchParams,
+    };
+    if (fieldId != null) {
+      payload['field_id'] = fieldId;
+    }
+    if (projectId != null) {
+      payload['app_id'] = projectId;
+    }
+    final response = await HexabaseBase.mutation(
+        GRAPHQL_DATASTORES_GLOBAL_SEARCH,
+        variables: {
+          'payload': payload,
+        });
+    var ary = response.data!['datastoresGlobalSearch']['item_list']['items']
+        as List<dynamic>;
+    var items = ary.map((data) {
+      data = data as Map<String, dynamic>;
+      var item = HexabaseItem();
+      data.forEach((key, value) => item.set(key, value));
+      return item;
+    }).toList();
+    return Tuple2(
+        response.data!['datastoresGlobalSearch']['item_list']['totalItems']
+            as int,
         items);
   }
 
@@ -238,11 +286,11 @@ class HexabaseItem extends HexabaseBase {
     return DateTime.parse(_fields[field]);
   }
 
-  Future<bool> save() {
+  Future<bool> save({String? comment = ""}) {
     if (id == null) {
       return create();
     } else {
-      return update();
+      return update(comment: comment);
     }
   }
 
@@ -341,18 +389,6 @@ class HexabaseItem extends HexabaseBase {
     });
   }
 
-  /*
-  void _setStatusList(Map<String, dynamic> statuses) {
-    statuses.forEach((key, value) {
-      _statuses.add(HexabaseItemAction(
-          id: value["s_id"],
-          idLabel: value["status_id"],
-          name: key,
-          nameLabel: value["status_name"]));
-    });
-  }
-  */
-
   List<HexabaseItemAction> actions() {
     return _actions;
   }
@@ -361,7 +397,7 @@ class HexabaseItem extends HexabaseBase {
     return _statuses;
   }
 
-  Future<bool> update() async {
+  Future<bool> update({String? comment = ""}) async {
     if (_updateStatus) {
       return updateStatus();
     }
@@ -370,7 +406,9 @@ class HexabaseItem extends HexabaseBase {
       'projectId': projectId,
       'datastoreId': datastoreId,
       'itemId': id,
-      'itemActionParameters': await toJson()
+      'itemActionParameters': await toJson(),
+      'is_notify_to_sender': true,
+      'comment': comment ?? ''
     });
     var params =
         response.data!['datastoreUpdateItem']['item'] as Map<String, dynamic>;
@@ -455,14 +493,7 @@ class HexabaseItem extends HexabaseBase {
 
   void subscribe(Function(Event) f) async {
     final channel = "item_view_${id}_${HexabaseBase.client.currentUser!.id}";
-    final url = "https://sse.hexabase.com/sse?channel=${channel}";
-    final eventSource = await EventSource.connect(url);
-    /*
-    final eventSource = await (kIsWeb
-        ? EventSource.connect(url, client: BrowserClient())
-        : EventSource.connect(url));
-    */
-    eventSource.listen(f);
-    return;
+    print(channel);
+    HexabaseBase.subscribu(channel, (p0) => print(p0));
   }
 }

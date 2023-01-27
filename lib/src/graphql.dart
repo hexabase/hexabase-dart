@@ -278,3 +278,22 @@ const String GRAPHQL_LOGOUT = r'''
     }
   }
 ''';
+
+const String GRAPHQL_DATASTORES_GLOBAL_SEARCH = r'''
+mutation($payload: GlobalSearchPayload!) {
+  datastoresGlobalSearch(
+		payload: $payload
+  ) {
+    search_result {
+      title
+      file_name
+      datastore_name
+      a_id
+      category
+    }
+    item_list
+    page
+    page_size
+  }
+}
+''';

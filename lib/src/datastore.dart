@@ -11,6 +11,12 @@ class HBDataStoreResponseWithCount {
   HBDataStoreResponseWithCount(this.count, this.items);
 }
 
+enum HBSearchType {
+  item,
+  file,
+  history,
+}
+
 class HexabaseDatastore extends HexabaseBase {
   late String? id;
   late String? name;
@@ -31,6 +37,26 @@ class HexabaseDatastore extends HexabaseBase {
       {HexabaseItemsParameters? query}) async {
     query = _getParams(query);
     var res = await HexabaseItem.all(id!, query, projectId);
+    return HBDataStoreResponseWithCount(res.item1, res.item2);
+  }
+
+  Future<HBDataStoreResponseWithCount> search(
+    HBSearchType type,
+    String query, {
+    int page = 1,
+    int perPage = 10,
+    List<Map<String, String>>? sortFields,
+    String? fieldId,
+  }) async {
+    Map<String, dynamic> params = {
+      'page': page,
+      'per_page': perPage,
+    };
+    if (sortFields != null) {
+      params['sort_fields'] = sortFields;
+    }
+    var res = await HexabaseItem.search(id!, type, query, params,
+        projectId: projectId, fieldId: fieldId);
     return HBDataStoreResponseWithCount(res.item1, res.item2);
   }
 

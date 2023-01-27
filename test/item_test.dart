@@ -109,17 +109,21 @@ void main() {
     print(item.actions().map((e) => e.name));
     await item.delete();
   });
-
   test('Subscribe item', () async {
+    return;
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
     var datastore = project.datastore(id: keys['datastore']);
     var items = await datastore.items();
     var item = items.first;
+    await item.set('name', 'スイカ2').set('price', 110).save(comment: "更新しました");
+    /*
+    print(item.title);
     item.subscribe((event) {
       print(event);
     });
     await new Future.delayed(new Duration(seconds: 120));
+    */
   }, timeout: Timeout(Duration(minutes: 2)));
 }

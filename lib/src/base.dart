@@ -3,6 +3,8 @@ import 'package:graphql/client.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:uri/uri.dart';
+import 'package:flutter/foundation.dart';
+import 'package:eventsource/eventsource.dart';
 
 class HexabaseBase {
   static late Hexabase client;
@@ -51,6 +53,18 @@ class HexabaseBase {
       throw result.exception!;
     }
     return result;
+  }
+
+  static Future<void> subscribu(String channel, Function(Event) f) async {
+    final url =
+        "${HexabaseBase.client.getSSEEndPoint()}/sse?channel=${channel}";
+    /*
+    final eventSource = await (kIsWeb
+        ? EventSource.connect(url, client: BrowserClient())
+        : EventSource.connect(url));
+    */
+    final eventSource = await EventSource.connect(url);
+    eventSource.listen(f);
   }
 
   static Future<dynamic> get(String path,

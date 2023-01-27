@@ -109,6 +109,14 @@ class Hexabase {
     }
   }
 
+  String getSSEEndPoint() {
+    if (env == HexabaseEnv.staging) {
+      return 'https://az-sse.hexabase.com';
+    } else {
+      return 'https://sse.hexabase.com';
+    }
+  }
+
   void init() {
     final httpLink = HttpLink(getEndpoint());
     final authLink = AuthLink(

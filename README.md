@@ -121,9 +121,17 @@ var datastore = project.datastore(id: 'DATASTORE_ID');
 #### Search datastore items
 
 ```dart
-var query.= datastore.query.);
+var query = datastore.query);
 query.equalTo('name', 'value');
-var items = await datastore.items(query.;
+var items = await datastore.items(query);
+```
+
+#### Full text search
+
+```dart
+var response = await datastore.search(HBSearchType.history, "comment");
+print(response.count); // Items count
+print(response.items); // Items
 ```
 
 #### Create new item
