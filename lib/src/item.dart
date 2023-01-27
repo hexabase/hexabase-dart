@@ -2,9 +2,7 @@ import 'dart:async';
 import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/graphql.dart';
-import 'package:hexabase/src/item_action.dart';
 import 'package:hexabase/src/items_parameter.dart';
-import 'package:hexabase/src/file.dart';
 import 'package:tuple/tuple.dart';
 import 'package:eventsource/eventsource.dart';
 

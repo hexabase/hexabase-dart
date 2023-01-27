@@ -1,9 +1,6 @@
 import './hexabase.dart';
 import 'package:graphql/client.dart';
 import 'package:dio/dio.dart';
-import 'package:http_parser/http_parser.dart';
-import 'package:uri/uri.dart';
-import 'package:flutter/foundation.dart';
 import 'package:eventsource/eventsource.dart';
 
 class HexabaseBase {
