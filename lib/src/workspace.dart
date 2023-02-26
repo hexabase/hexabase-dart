@@ -31,8 +31,8 @@ class HexabaseWorkspace extends HexabaseBase {
     }).toList();
   }
 
-  HexabaseProject project(String id) {
-    return HexabaseProject(id: id);
+  HexabaseProject project({String? id}) {
+    return HexabaseProject(id: id, workspace: this);
   }
 
   Future<List<HexabaseProject>> projects() async {

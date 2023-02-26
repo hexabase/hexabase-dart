@@ -297,3 +297,28 @@ mutation($payload: GlobalSearchPayload!) {
   }
 }
 ''';
+
+const String GRAPHQL_CREATE_DATASTORE_FROM_TEMPLATE = r'''
+  mutation CreateDatastoreFromTemplate($payload: CreateDatastoreFromSeedReq!) {
+    createDatastoreFromTemplate(payload: $payload) {
+      datastoreId
+    }
+  }
+''';
+
+const String GRAPHQL_UPDATE_DATASTORE_SETTING = r'''
+  mutation UpdateDatastoreSetting($payload: DatastoreUpdateSetting!) {
+    updateDatastoreSetting(payload: $payload) {
+      success
+      data
+    }
+  }
+''';
+
+const String GRAPHQL_DELETE_DATASTORE = r'''
+  mutation DeleteDatastore($datastoreId: String!) {
+    deleteDatastore(datastoreId: $datastoreId) {
+      success
+    }
+  }
+''';

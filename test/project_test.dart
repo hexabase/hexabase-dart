@@ -27,7 +27,7 @@ void main() {
     var projects = await workspace.projects();
     // print(projects[0].datastores.length);
     expect(projects[0].id, isNot(''));
-    expect(projects[0].datastores[0].id, isNot(''));
+    expect(projects[0].datastores()[0].id, isNot(''));
   });
   test('Get Application Info', () async {
     var keys = await loadFile();
@@ -54,5 +54,14 @@ void main() {
     await project.save();
     expect(project.id, isNot(''));
     await project.delete();
+  });
+
+  test('Execute function', () async {
+    var projectId = '636affb311092f02affd3adc';
+    var client = Hexabase.instance;
+    var project = client.project();
+    project.id = projectId;
+    var result = await project.function('sendMail', params: {'a': 1, 'b': 2});
+    print(result);
   });
 }

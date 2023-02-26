@@ -109,11 +109,35 @@ await project.delete();
 
 ### Datastore
 
+#### Create datastore
+
+```dart
+var project = client.project(id: 'PROJECT_ID');
+var datastore = await project.datastore();
+```
+
 #### Get datastore
 
 ```dart
 var project = client.project(id: 'PROJECT_ID');
-var datastore = project.datastore(id: 'DATASTORE_ID');
+var datastore = await project.datastore(id: 'DATASTORE_ID');
+```
+
+#### Update datastore
+
+```dart
+var datastore = await project.datastore();
+datastore.name('ja', 'テストデータストア').name('en', 'Test Datastore');
+datastore.displayId = 'TestDatastore';
+datastore.ignoreSaveTemplate = true;
+await datastore.save();
+```
+
+#### Delete datastore
+
+```dart
+var datastore = await project.datastore();
+await datastore.delete();
 ```
 
 ### Datastore Item
@@ -287,3 +311,6 @@ query.notInArray("name", ["Apple", "Orange"]);
 MIT License
 
 
+
+createDatastoreFromTemplate
+updateDatastoreSetting

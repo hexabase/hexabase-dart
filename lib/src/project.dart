@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/datastore.dart';
 import 'package:hexabase/src/graphql.dart';
@@ -11,10 +12,11 @@ class HexabaseProject extends HexabaseBase {
   String? templateId;
   String? displayId;
   String? theme;
+  HexabaseWorkspace? workspace;
 
-  late List<HexabaseDatastore> datastores;
+  late List<HexabaseDatastore?> _datastores = [];
 
-  HexabaseProject({this.id}) : super();
+  HexabaseProject({this.id, this.workspace}) : super();
 
   Future<bool> save() async {
     if (id == null) return create();
@@ -73,8 +75,21 @@ class HexabaseProject extends HexabaseBase {
     return false;
   }
 
-  HexabaseDatastore datastore({String? id}) {
-    return HexabaseDatastore(id: id, projectId: this.id);
+  Future<HexabaseDatastore> datastore({String? id}) async {
+    if (id != null) {
+      var ds = _datastores.firstWhere((datastore) => datastore!.id == id,
+          orElse: () => null);
+      if (ds == null) throw Exception('Datastore $id is not found');
+      return ds;
+    }
+    var ds = HexabaseDatastore(project: this);
+    await ds.save();
+    _datastores.add(ds);
+    return ds;
+  }
+
+  List<HexabaseDatastore> datastores() {
+    return _datastores as List<HexabaseDatastore>;
   }
 
   Future<HexabaseProject> get(String id) async {
@@ -104,6 +119,18 @@ class HexabaseProject extends HexabaseBase {
     return this;
   }
 
+  Future<dynamic> function(String functionId,
+      {Map<String, dynamic>? params}) async {
+    params = params ?? {};
+    var data = await HexabaseBase.post(
+        '/api/v0/applications/$id/functions/$functionId', params);
+    var errors = data['errors'] as List<dynamic>;
+    if (errors.isNotEmpty) {
+      throw Exception(errors);
+    }
+    return data['data'];
+  }
+
   static Future<List<HexabaseProject>> all(String id) async {
     final response = await HexabaseBase.query(
         GRAPHQL_GET_APPLICATION_AND_DATASTORE,
@@ -116,10 +143,14 @@ class HexabaseProject extends HexabaseBase {
       project._name = {'ja': data['name'], 'en': data['name']};
       project.displayId = data['display_id'];
       var datastores = data['datastores'] as List<dynamic>;
-      project.datastores = datastores.map((data) {
-        var datastore = HexabaseDatastore(
-            id: data['datastore_id'], projectId: data['project_id']);
-        datastore.name = data['name'];
+      project._datastores = datastores.map((data) {
+        var datastore =
+            HexabaseDatastore(id: data['datastore_id'], project: project);
+        datastore.name('ja', data['name'] as String);
+        datastore.displayId = data['display_id'] as String;
+        datastore.deleted = data['deleted'] as bool;
+        datastore.imported = data['imported'] as bool;
+        datastore.uploading = data['uploading'] as bool;
         return datastore;
       }).toList();
       return project;

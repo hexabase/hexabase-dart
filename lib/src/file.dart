@@ -83,8 +83,8 @@ class HexabaseFile extends HexabaseBase {
         break;
       case 'item':
         item = value as HexabaseItem;
-        projectId = item!.projectId;
-        datastoreId = item!.datastoreId;
+        projectId = item!.project!.id;
+        datastoreId = item!.datastore!.id;
         break;
       case 'p_id':
       case 'project_id':

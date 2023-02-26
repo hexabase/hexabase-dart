@@ -15,8 +15,8 @@ class HexabaseItem extends HexabaseBase {
   late DateTime? updatedAt;
   late String? createdBy;
   late String? updatedBy;
-  late String? datastoreId;
-  late String? projectId;
+  late HexabaseProject? project;
+  late HexabaseDatastore? datastore;
   Map<String, dynamic> _uploadFile = {};
 
   int revNo = 0;
@@ -44,22 +44,27 @@ class HexabaseItem extends HexabaseBase {
 
   // private
   var _updateStatus = false;
-  HexabaseItem({this.id, this.datastoreId, this.projectId}) : super();
+  HexabaseItem({this.id, this.datastore, this.project}) : super();
 
-  static Future<Tuple2<int, List<HexabaseItem>>> all(String datastoreId,
-      HexabaseItemsParameters params, String? projectId) async {
+  static Future<Tuple2<int, List<HexabaseItem>>> all(
+      HexabaseDatastore datastore,
+      HexabaseItemsParameters params,
+      HexabaseProject? project) async {
+    var variables = {
+      'datastoreId': datastore.id,
+      'getItemsParameters': await params.toJson()
+    };
+    if (project != null) {
+      variables['projectId'] = project.id;
+    }
     final response = await HexabaseBase.mutation(
         GRAPHQL_DATASTORE_GET_DATASTORE_ITEMS,
-        variables: {
-          'projectId': projectId,
-          'datastoreId': datastoreId,
-          'getItemsParameters': await params.toJson()
-        });
+        variables: variables);
     var ary =
         response.data!['datastoreGetDatastoreItems']['items'] as List<dynamic>;
     var items = ary.map((data) {
       data = data as Map<String, dynamic>;
-      var item = HexabaseItem();
+      var item = HexabaseItem(datastore: datastore, project: project);
       data.forEach((key, value) => item.set(key, value));
       return item;
     }).toList();
@@ -68,9 +73,13 @@ class HexabaseItem extends HexabaseBase {
         items);
   }
 
-  static Future<Tuple2<int, List<HexabaseItem>>> search(String datastoreId,
-      HBSearchType type, String query, Map<String, dynamic> itemSearchParams,
-      {String? projectId, String? fieldId}) async {
+  static Future<Tuple2<int, List<HexabaseItem>>> search(
+      HexabaseDatastore datastore,
+      HBSearchType type,
+      String query,
+      Map<String, dynamic> itemSearchParams,
+      {HexabaseProject? project,
+      String? fieldId}) async {
     var category = '';
     switch (type) {
       case HBSearchType.item:
@@ -84,7 +93,7 @@ class HexabaseItem extends HexabaseBase {
         break;
     }
     var payload = {
-      'datastore_id': datastoreId,
+      'datastore_id': datastore.id,
       'query': query,
       'return_item_list': true,
       'category': category,
@@ -93,8 +102,8 @@ class HexabaseItem extends HexabaseBase {
     if (fieldId != null) {
       payload['field_id'] = fieldId;
     }
-    if (projectId != null) {
-      payload['app_id'] = projectId;
+    if (project != null) {
+      payload['app_id'] = project.id;
     }
     final response = await HexabaseBase.mutation(
         GRAPHQL_DATASTORES_GLOBAL_SEARCH,
@@ -105,7 +114,7 @@ class HexabaseItem extends HexabaseBase {
         as List<dynamic>;
     var items = ary.map((data) {
       data = data as Map<String, dynamic>;
-      var item = HexabaseItem();
+      var item = HexabaseItem(datastore: datastore, project: project);
       data.forEach((key, value) => item.set(key, value));
       return item;
     }).toList();
@@ -189,13 +198,13 @@ class HexabaseItem extends HexabaseBase {
         updatedBy = value as String;
         break;
       case 'd_id':
-        datastoreId = value as String;
+        datastore = HexabaseDatastore(id: value as String);
         break;
       case 'i_id':
         id = value as String;
         break;
       case 'p_id':
-        projectId = value as String;
+        project = HexabaseProject(id: value as String);
         break;
       case 'rev_no':
         if (value is int) {
@@ -296,8 +305,8 @@ class HexabaseItem extends HexabaseBase {
     var response = await HexabaseBase.mutation(
         GRAPHQL_DATASTORE_CREATE_NEW_ITEM,
         variables: {
-          'projectId': projectId,
-          'datastoreId': datastoreId,
+          'projectId': project!.id,
+          'datastoreId': datastore!.id,
           'newItemActionParameters': await toJson()
         });
     id = response.data!['datastoreCreateNewItem']['item_id'] as String;
@@ -344,8 +353,8 @@ class HexabaseItem extends HexabaseBase {
   Future<bool> getDetail() async {
     var response = await HexabaseBase.query(GRAPHQL_GET_DATASTORE_ITEM_DETAILS,
         variables: {
-          'projectId': projectId,
-          'datastoreId': datastoreId,
+          'projectId': project!.id,
+          'datastoreId': datastore!.id,
           'itemId': id,
           'datastoreItemDetailParams': {
             'use_display_id': true,
@@ -401,8 +410,8 @@ class HexabaseItem extends HexabaseBase {
     }
     final response =
         await HexabaseBase.mutation(GRAPHQL_DATASTORE_UPDATE_ITEM, variables: {
-      'projectId': projectId,
-      'datastoreId': datastoreId,
+      'projectId': project!.id,
+      'datastoreId': datastore!.id,
       'itemId': id,
       'itemActionParameters': await toJson(),
       'is_notify_to_sender': true,
@@ -423,8 +432,8 @@ class HexabaseItem extends HexabaseBase {
     var response = await HexabaseBase.mutation(
         GRAPHQL_DATASTORE_EXECUTE_ITEM_ACTION,
         variables: {
-          'projectId': projectId,
-          'datastoreId': datastoreId,
+          'projectId': project!.id,
+          'datastoreId': datastore!.id,
           'itemId': id,
           'actionId': action.id,
           'itemActionParameters': await toJson()
@@ -452,8 +461,8 @@ class HexabaseItem extends HexabaseBase {
     }
     final response =
         await HexabaseBase.mutation(GRAPHQL_DATASTORE_DELETE_ITEM, variables: {
-      'projectId': projectId,
-      'datastoreId': datastoreId,
+      'projectId': project!.id,
+      'datastoreId': datastore!.id,
       'itemId': id,
       'deleteItemReq': params
     });
@@ -490,8 +499,8 @@ class HexabaseItem extends HexabaseBase {
   }
 
   void subscribe(Function(Event) f) async {
-    final channel = "item_view_${id}_${HexabaseBase.client.currentUser!.id}";
+    final channel = "datastore_${HexabaseBase.client.currentUser!.id}_$id";
     print(channel);
-    HexabaseBase.subscribu(channel, (p0) => print(p0));
+    HexabaseBase.subscribe(channel, (p0) => print(p0));
   }
 }

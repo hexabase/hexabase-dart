@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.7.0
+
+Support CRUD of datastore
+
 ## 0.6.3
 
 Support full text search

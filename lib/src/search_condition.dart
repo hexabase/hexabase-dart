@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/field_result.dart';
 import 'package:hexabase/src/graphql.dart';
@@ -6,13 +7,14 @@ import 'package:hexabase/src/graphql.dart';
 class HexabaseSearchCondition extends HexabaseBase {
   HexabaseSearchCondition() : super();
   Map<String, dynamic> params = {};
+
   static Future<List<HexabaseFieldResult>> all(
-      String projectId, String datastoreId) async {
+      HexabaseProject project, HexabaseDatastore datastore) async {
     final response = await HexabaseBase.query(
         GRAPHQL_GET_ITEM_SEARCH_CONDITIONS,
         variables: {
-          'projectId': projectId,
-          'datastoreId': datastoreId,
+          'projectId': project.id,
+          'datastoreId': datastore.id,
         });
     if (response.data!['getItemSearchConditions']['has_error']) {
       throw Exception('Get item search conditions failed');

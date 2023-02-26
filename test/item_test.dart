@@ -26,7 +26,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
-    var datastore = project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']);
     var item = datastore.item();
     item.set('name', 'スイカ').set('price', 100);
     await item.save();
@@ -38,7 +38,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
-    var datastore = project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']);
     var item = datastore.item();
     item.set('name', 'スイカ').set('price', 120);
     var filePath = './test/test.png';
@@ -60,7 +60,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
-    var datastore = project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']);
     var item = datastore.item();
     item.set('name', 'スイカ').set('price', 120);
     var filePaths = ['./test/test.png', './test/test2.png'];
@@ -87,7 +87,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
-    var datastore = project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']);
     var query = datastore.query();
     query.equalTo('price', 120).per(100);
     var items = await datastore.items(query: query);
@@ -99,7 +99,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
-    var datastore = project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']);
     var item = datastore.item();
     item.set('name', 'スイカ').set('price', 100);
     await item.save();
@@ -110,20 +110,18 @@ void main() {
     await item.delete();
   });
   test('Subscribe item', () async {
-    return;
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
-    var datastore = project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']);
     var items = await datastore.items();
     var item = items.first;
-    await item.set('name', 'スイカ2').set('price', 110).save(comment: "更新しました");
-    /*
+    await item.set('name', 'スイカ2').set('price', 120).save(comment: "更新しました");
     print(item.title);
+    print(item.id);
     item.subscribe((event) {
       print(event);
     });
-    await new Future.delayed(new Duration(seconds: 120));
-    */
+    await new Future.delayed(new Duration(seconds: 360));
   }, timeout: Timeout(Duration(minutes: 2)));
 }

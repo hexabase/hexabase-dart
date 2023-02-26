@@ -23,7 +23,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
-    var datastore = project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var query = datastore.query();
     query.page(1).per(10).displayId(true);
@@ -38,7 +38,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
-    var datastore = project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var query = datastore.query();
     query.page(1).per(10).displayId(true);
@@ -53,7 +53,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
-    var datastore = project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var query = datastore.query();
     query.page(1).per(10).displayId(true);
@@ -67,7 +67,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
-    var datastore = project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 11, 0, 0, 0);
     var query = datastore.query();
@@ -82,7 +82,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
-    var datastore = project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 9, 0, 0, 0);
     var query = datastore.query();
@@ -97,7 +97,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
-    var datastore = project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 10);
     var query = datastore.query();
@@ -116,7 +116,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: keys['project']);
-    var datastore = project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 10);
     var query = datastore.query();
@@ -135,11 +135,41 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = client.project(id: "63d3266a05e6189afa128121");
-    var datastore = project.datastore(id: "63d32682c230cd193d13acdd");
+    var datastore = await project.datastore(id: "63d32682c230cd193d13acdd");
     var response = await datastore.search(HBSearchType.history, "コメント");
     print(response.count);
     if (response.items.length > 0) {
       print(response.items[0].title);
     }
+  });
+
+  test('create datastore', () async {
+    var keys = await loadFile();
+    var client = Hexabase.instance;
+    var project = client.project(id: keys['project']);
+    project.workspace = HexabaseWorkspace(id: keys['workspace']);
+    var datastore = await project.datastore();
+    print(datastore.id);
+  });
+
+  test('update datastore', () async {
+    var keys = await loadFile();
+    var client = Hexabase.instance;
+    var project = client.project(id: keys['project']);
+    project.workspace = HexabaseWorkspace(id: keys['workspace']);
+    var datastore = await project.datastore();
+    print(datastore.id);
+    datastore.name('ja', 'テストデータストア').name('en', 'Test Datastore');
+    datastore.displayId = 'TestDatastore';
+    datastore.ignoreSaveTemplate = true;
+    await datastore.save();
+  });
+
+  test('Fetch all datastores', () async {
+    var keys = await loadFile();
+    var client = Hexabase.instance;
+    var project = client.project(id: keys['project']);
+    // var datastores = await project.datastores();
+    // print(datastores);
   });
 }

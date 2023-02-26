@@ -52,7 +52,7 @@ class HexabaseBase {
     return result;
   }
 
-  static Future<void> subscribu(String channel, Function(Event) f) async {
+  static Future<void> subscribe(String channel, Function(Event) f) async {
     final url =
         "${HexabaseBase.client.getSSEEndPoint()}/sse?channel=${channel}";
     /*
@@ -116,7 +116,6 @@ class HexabaseBase {
       },
     );
     var response = await dio.delete(uri.toString(), options: options);
-    print(response.data);
     if (response.statusCode == 200 || response.statusCode == 201) {
       return response.data;
     } else {
@@ -124,7 +123,6 @@ class HexabaseBase {
     }
   }
 
-  /*
   static Future<dynamic> post(String path, dynamic data,
       {bool auth = true, bool multipart = false}) async {
     if (auth && client.token == null) {
@@ -133,6 +131,7 @@ class HexabaseBase {
     final dio = Dio();
     dio.interceptors.add(LogInterceptor(responseBody: false));
     // dio.options.contentType = Headers.formUrlEncodedContentType;
+    /*
     if (multipart) {
       data = FormData.fromMap({
         'filename': data['filename'],
@@ -140,6 +139,7 @@ class HexabaseBase {
             filename: data['filename'], contentType: MediaType('image', 'png')),
       });
     }
+    */
     final response = await dio.post(
       '${client.getRestEndPoint()}$path',
       data: data,
@@ -149,12 +149,10 @@ class HexabaseBase {
         },
       ),
     );
-    print(response.data);
     if (response.statusCode == 200 || response.statusCode == 201) {
       return response.data;
     } else {
       throw Exception('Failed to load post');
     }
   }
-  */
 }
