@@ -322,3 +322,171 @@ const String GRAPHQL_DELETE_DATASTORE = r'''
     }
   }
 ''';
+
+const String GRAPHQL_DATASTORE_GET_FIELDS = r'''
+  query DatastoreGetFields($projectId: String!, $datastoreId: String!) {
+    datastoreGetFields(
+      projectId: $projectId
+      datastoreId: $datastoreId
+    )
+    {
+      fields
+      field_layout
+    }
+  }
+''';
+
+const String GRAPHQL_DATASTORES = r'''
+  query Datastores($projectId: String!) {
+    datastores(
+      projectId:$projectId
+    )
+    {
+      d_id
+      p_id
+      w_id
+      ws_name
+      name
+      uploading
+      imported
+      no_status
+      show_in_menu
+      deleted
+      display_order
+      display_id
+      show_only_dev_mode
+      use_qr_download
+      use_csv_update
+      use_external_sync
+      use_replace_upload
+      unread
+      invisible
+      use_grid_view
+      use_grid_view_by_default
+      use_board_view
+      is_external_service
+      data_source
+      external_service_data
+      show_display_id_to_list
+      show_info_to_list
+    }
+  }
+''';
+
+const String GRAPHQL_DATASTORE_CREATE_FIELD = r'''
+  mutation DatastoreCreateField($payload: CreateFieldPayload!, $datastoreId: String!) {
+    datastoreCreateField(
+      payload: $payload
+      datastoreId: $datastoreId
+    ) {
+      display_id
+      field_id
+    }
+  }
+''';
+
+const String GRAPHQL_GET_GROUP_TREE = r'''
+  query GetGroupTree() {
+    getGroupTree(
+    ) {
+      error
+      result {
+        id
+        name
+        display_id
+        index
+        show_child
+        disable_ui_access
+        childGroups {
+          id
+          name
+          display_id
+          index
+          show_child
+          disable_ui_access
+        }
+      }
+    }
+  }
+''';
+
+const String GRAPHQL_WORKSPACE_GET_GROUP_CHILDREN = r'''
+  query WorkspaceGetGroupChildren($groupId: String) {
+    workspaceGetGroupChildren(
+      groupId: $groupId
+    )
+    {
+      error
+      group {
+        g_id
+        group_id
+        name
+        index
+      }
+      children {
+        g_id
+        group_id
+        name
+        index
+      }
+      count
+    }
+  }
+''';
+
+const String GRAPHQL_CREATE_GROUP = r'''
+  mutation CreateGroup($parentGroupId: String!, $payload: CreateGroupReq!) {
+    createGroup(
+      payload: $payload
+      parentGroupId: $parentGroupId
+    ) {
+      error
+      groupTree_datastores_res
+      group {
+        id
+        g_id
+        name
+        display_id
+        index
+        disable_ui_access
+        is_root
+        access_key
+        created_at
+      }
+    }
+  }
+''';
+
+const String GRAPHQL_UPDATE_GROUP = r'''
+  query UpdateGroup($groupId: String!, $payload: UpdateGroupReq!) {
+    updateGroup(
+      payload: $payload
+      groupId: $groupId
+    ) {
+      error
+      group {
+        g_id
+        group_id
+        name
+        index
+      }
+      children {
+        g_id
+        group_id
+        name
+        index
+      }
+      count
+    }
+  }
+''';
+
+const String GRAPHQL_DELETE_GROUP = r'''
+  query DeleteGroup($groupId: String!) {
+    deleteGroup(
+      groupId: $groupId
+    ) {
+      error
+    }
+  }
+''';

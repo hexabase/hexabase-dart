@@ -27,7 +27,7 @@ void main() {
     var projects = await workspace.projects();
     // print(projects[0].datastores.length);
     expect(projects[0].id, isNot(''));
-    expect(projects[0].datastores()[0].id, isNot(''));
+    expect((await projects[0].datastores())[0].id, isNot(''));
   });
   test('Get Application Info', () async {
     var keys = await loadFile();

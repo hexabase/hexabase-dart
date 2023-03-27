@@ -172,4 +172,14 @@ void main() {
     // var datastores = await project.datastores();
     // print(datastores);
   });
+
+  test('Delete all datastores', () async {
+    var keys = await loadFile();
+    var client = Hexabase.instance;
+    var project = client.project(id: keys['project']);
+    var datastores = await project.datastores();
+    for (var d in datastores) {
+      print(await d.delete());
+    }
+  });
 }

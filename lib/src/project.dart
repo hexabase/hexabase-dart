@@ -3,6 +3,8 @@ import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/datastore.dart';
 import 'package:hexabase/src/graphql.dart';
+import 'package:hexabase/src/role.dart';
+import 'package:collection/collection.dart';
 
 class HexabaseProject extends HexabaseBase {
   late String? id;
@@ -13,8 +15,9 @@ class HexabaseProject extends HexabaseBase {
   String? displayId;
   String? theme;
   HexabaseWorkspace? workspace;
+  List<HexabaseRole?> _roles = [];
 
-  late List<HexabaseDatastore?> _datastores = [];
+  late List<HexabaseDatastore> _datastores = [];
 
   HexabaseProject({this.id, this.workspace}) : super();
 
@@ -77,19 +80,24 @@ class HexabaseProject extends HexabaseBase {
 
   Future<HexabaseDatastore> datastore({String? id}) async {
     if (id != null) {
-      var ds = _datastores.firstWhere((datastore) => datastore!.id == id,
-          orElse: () => null);
+      var ds = _datastores.firstWhereOrNull(
+        (datastore) => datastore!.id == id,
+      );
       if (ds == null) throw Exception('Datastore $id is not found');
       return ds;
     }
     var ds = HexabaseDatastore(project: this);
     await ds.save();
-    _datastores.add(ds);
-    return ds;
+    return datastore(id: ds.id);
   }
 
-  List<HexabaseDatastore> datastores() {
-    return _datastores as List<HexabaseDatastore>;
+  Future<List<HexabaseDatastore>> datastores(
+      {List<HexabaseDatastore>? datastores}) async {
+    if (datastores != null) {
+      _datastores = datastores;
+    }
+    _datastores = await HexabaseDatastore.all(this);
+    return _datastores;
   }
 
   Future<HexabaseProject> get(String id) async {
@@ -129,6 +137,13 @@ class HexabaseProject extends HexabaseBase {
       throw Exception(errors);
     }
     return data['data'];
+  }
+
+  Future<List<HexabaseRole>> roles() async {
+    if (_roles.isEmpty) {
+      _roles = await HexabaseRole.all(this);
+    }
+    return _roles as List<HexabaseRole>;
   }
 
   static Future<List<HexabaseProject>> all(String id) async {

@@ -10,3 +10,5 @@ export 'src/user.dart';
 export 'src/workspace.dart';
 export 'src/item.dart';
 export 'src/file.dart';
+export 'src/field.dart';
+export 'src/group.dart';

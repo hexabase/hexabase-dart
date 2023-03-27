@@ -107,6 +107,45 @@ await project.save();
 await project.delete();
 ```
 
+### Group
+
+#### Get groups
+
+```dart
+var groups = await client.groups();
+```
+
+#### Find a group
+
+```dart
+var group = await client.group(id: '999999');
+```
+
+#### Create group
+
+```dart
+var group = await client.group();
+group.name = 'Test group';
+group.parent = groups[0];
+group.displayId = 'test_group';
+await group.save();
+```
+
+#### Update group
+
+```dart
+group.name = 'New group';
+await group.save();
+```
+
+#### Delete group
+
+Currently, this method is not working.
+
+```dart
+await group.delete();
+```
+
 ### Datastore
 
 #### Create datastore

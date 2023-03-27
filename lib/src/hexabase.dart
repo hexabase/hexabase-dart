@@ -93,6 +93,18 @@ class Hexabase {
     return HexabaseProject(id: id);
   }
 
+  Future<List<HexabaseGroup>> groups() {
+    return HexabaseGroup.all();
+  }
+
+  Future<HexabaseGroup> group({String? id}) async {
+    if (id == null) {
+      return HexabaseGroup();
+    } else {
+      return HexabaseGroup.find(id);
+    }
+  }
+
   String getEndpoint() {
     if (env == HexabaseEnv.staging) {
       return 'https://hxb-graph.hexabase.com/graphql';
