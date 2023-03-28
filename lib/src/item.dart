@@ -60,6 +60,7 @@ class HexabaseItem extends HexabaseBase {
     final response = await HexabaseBase.mutation(
         GRAPHQL_DATASTORE_GET_DATASTORE_ITEMS,
         variables: variables);
+    // print(response);
     var ary =
         response.data!['datastoreGetDatastoreItems']['items'] as List<dynamic>;
     var items = ary.map((data) {
@@ -219,6 +220,14 @@ class HexabaseItem extends HexabaseBase {
       case 'unread':
         unread = int.parse(value);
         break;
+      case 'lookup_items':
+        var params = value as Map<String, dynamic>;
+        params.forEach((key, value) {
+          var item = HexabaseItem();
+          item.sets(value);
+          _fields[key] = item;
+        });
+        break;
       default:
         if (value is Map && value.containsKey('file_id')) {
           var file = HexabaseFile();
@@ -291,6 +300,13 @@ class HexabaseItem extends HexabaseBase {
       return _fields[field] as DateTime;
     }
     return DateTime.parse(_fields[field]);
+  }
+
+  HexabaseItem getAsItem(String field) {
+    if (_fields.containsKey(field)) {
+      return _fields[field] as HexabaseItem;
+    }
+    return HexabaseItem();
   }
 
   Future<bool> save({String? comment = ""}) {
@@ -481,6 +497,8 @@ class HexabaseItem extends HexabaseBase {
           value.isNotEmpty &&
           value[0] is HexabaseFile) {
         _uploadFile[key] = value;
+      } else if (value is HexabaseItem) {
+        // ignore
       } else {
         json["item"][key] = value;
       }
@@ -495,6 +513,7 @@ class HexabaseItem extends HexabaseBase {
     json['return_item_result'] = returnItemResult;
     json['return_actionscript_logs'] = returnActionscriptLogs;
     json['disable_linker'] = disableLinker;
+    print(json);
     return json;
   }
 

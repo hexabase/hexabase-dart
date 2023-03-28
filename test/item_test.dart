@@ -95,6 +95,23 @@ void main() {
       await item.delete();
     }
   });
+
+  test('Get linked item', () async {
+    var keys = await loadFile();
+    var client = Hexabase.instance;
+    var project = client.project(id: '63dcd13c8f194b1a50423a1c');
+    var datastore = await project.datastore(id: '6422443794359331a66264a5');
+    var query = datastore.query();
+    query.per(100).include(true);
+    var items = await datastore.items(query: query);
+    for (var item in items) {
+      print(item.getAsItem('ProjectId').title);
+      // await item.delete();
+      item.set("cost", 5);
+      await item.save();
+    }
+  });
+
   test('Change item status', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;

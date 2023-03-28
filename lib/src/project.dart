@@ -79,6 +79,9 @@ class HexabaseProject extends HexabaseBase {
   }
 
   Future<HexabaseDatastore> datastore({String? id}) async {
+    if (_datastores.isEmpty) {
+      await datastores();
+    }
     if (id != null) {
       var ds = _datastores.firstWhereOrNull(
         (datastore) => datastore!.id == id,

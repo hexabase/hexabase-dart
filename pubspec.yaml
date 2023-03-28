@@ -1,6 +1,6 @@
 name: hexabase
 description: Dart and Flutter SDK for Hexabase
-version: 0.8.0
+version: 0.8.1
 homepage: https://www.hexabase.com/
 environment:
   sdk: ">=2.17.0 <3.0.0"
