@@ -6,6 +6,8 @@ import 'package:hexabase/src/user.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/workspace.dart';
 
+import 'graphql.dart';
+
 class Hexabase {
   static late Hexabase _instance;
   final HexabaseEnv env;
@@ -79,6 +81,20 @@ class Hexabase {
       return false;
     }
     return token != null;
+  }
+
+  Future<HexabaseWorkspace> current(String workspaceId) async {
+    final response =
+    await HexabaseBase.query(GRAPHQL_SELECT_WORKSPACE, variables: {
+      'setCurrentWorkSpaceInput': {
+        'workspace_id': workspaceId,
+      }
+    });
+    final result = response?.data?['setCurrentWorkSpace']?['success'] as bool?;
+    if (result == null || result == false) {
+      throw Exception('Not Found Workspace');
+    }
+    return HexabaseWorkspace(id: workspaceId);
   }
 
   HexabaseWorkspace workspace({String? id}) {
