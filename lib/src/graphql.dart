@@ -75,7 +75,7 @@ const String GRAPHQL_CREATE_WORKSPACE = r'''
 ''';
 
 const String GRAPHQL_SELECT_WORKSPACE = r'''
-  mutation GetGGGGet($setCurrentWorkSpaceInput: SetCurrentWorkSpaceInput!) {
+  mutation setCurrentWorkSpace($setCurrentWorkSpaceInput: SetCurrentWorkSpaceInput!) {
     setCurrentWorkSpace(setCurrentWorkSpaceInput: $setCurrentWorkSpaceInput) {
       success
     }

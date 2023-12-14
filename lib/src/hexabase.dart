@@ -83,7 +83,7 @@ class Hexabase {
     return token != null;
   }
 
-  Future<HexabaseWorkspace> selectWorkspace(String workspaceId) async {
+  Future<HexabaseWorkspace> current(String workspaceId) async {
     final response =
     await HexabaseBase.query(GRAPHQL_SELECT_WORKSPACE, variables: {
       'setCurrentWorkSpaceInput': {
