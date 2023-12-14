@@ -74,6 +74,14 @@ const String GRAPHQL_CREATE_WORKSPACE = r'''
   }
 ''';
 
+const String GRAPHQL_SELECT_WORKSPACE = r'''
+  mutation GetGGGGet($setCurrentWorkSpaceInput: SetCurrentWorkSpaceInput!) {
+    setCurrentWorkSpace(setCurrentWorkSpaceInput: $setCurrentWorkSpaceInput) {
+      success
+    }
+  }
+''';
+
 const String GRAPHQL_GET_ITEM_SEARCH_CONDITIONS = r'''
   query getItemSearchConditions ($datastoreId: String!, $projectId: String!) {
     getItemSearchConditions(datastoreId: $datastoreId, projectId: $projectId) {
