@@ -348,8 +348,3 @@ query.notInArray("name", ["Apple", "Orange"]);
 ## License
 
 MIT License
-
-
-
-createDatastoreFromTemplate
-updateDatastoreSetting
