@@ -44,7 +44,9 @@ class HexabaseItem extends HexabaseBase {
 
   // private
   var _updateStatus = false;
-  HexabaseItem({this.id, this.datastore, this.project}) : super();
+  HexabaseItem({this.id, this.datastore, this.project}): super() {
+    updatedAt = null;
+  }
 
   static Future<Tuple2<int, List<HexabaseItem>>> all(
       HexabaseDatastore datastore,
