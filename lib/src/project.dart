@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
-import 'package:hexabase/src/datastore.dart';
+// import 'package:hexabase/src/datastore.dart';
 import 'package:hexabase/src/graphql.dart';
 import 'package:hexabase/src/role.dart';
 import 'package:collection/collection.dart';
@@ -99,7 +99,9 @@ class HexabaseProject extends HexabaseBase {
     if (datastores != null) {
       _datastores = datastores;
     }
-    _datastores = await HexabaseDatastore.all(this);
+    if (_datastores.isEmpty) {
+      _datastores = await HexabaseDatastore.all(this);
+    }
     return _datastores;
   }
 

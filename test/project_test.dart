@@ -49,7 +49,7 @@ void main() {
     var project = client.project();
     project.name('ja', 'テストアプリ').name('en', 'Test App');
     await project.save();
-    await new Future.delayed(new Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
     project.name('ja', 'テストアプリ2');
     await project.save();
     expect(project.id, isNot(''));
