@@ -44,7 +44,9 @@ class HexabaseItem extends HexabaseBase {
 
   // private
   var _updateStatus = false;
-  HexabaseItem({this.id, this.datastore, this.project}) : super();
+  HexabaseItem({this.id, this.datastore, this.project}): super() {
+    updatedAt = null;
+  }
 
   static Future<Tuple2<int, List<HexabaseItem>>> all(
       HexabaseDatastore datastore,
@@ -424,12 +426,14 @@ class HexabaseItem extends HexabaseBase {
     if (_updateStatus) {
       return updateStatus();
     }
+    var itemActionParameters =  await toJson();
+    itemActionParameters['comment'] = comment ?? '';
     final response =
         await HexabaseBase.mutation(GRAPHQL_DATASTORE_UPDATE_ITEM, variables: {
       'projectId': project!.id,
       'datastoreId': datastore!.id,
       'itemId': id,
-      'itemActionParameters': await toJson(),
+      'itemActionParameters': itemActionParameters,
       'is_notify_to_sender': true,
       'comment': comment ?? ''
     });
