@@ -12,13 +12,13 @@ class Hexabase {
   static late Hexabase _instance;
   final HexabaseEnv env;
   late HexabaseUser auth;
-  late HexabaseWorkspace _workspace;
-  late HexabaseProject _project;
+  late List<HexabaseWorkspace> _workspaces = [];
   String? token;
   HexabaseUser? currentUser;
   late DateTime expiryDate;
   late GraphQLClient graphQLClient;
   bool _initialized = false;
+  late HexabaseWorkspace currentWorkspace;
 
   static int persistenceNone = 0;
   static int persistenceLocal = 1;
@@ -35,8 +35,6 @@ class Hexabase {
   Hexabase({this.env = HexabaseEnv.production}) {
     HexabaseBase.client = this;
     auth = HexabaseUser();
-    _workspace = HexabaseWorkspace();
-    _project = HexabaseProject();
     graphQLClient = GraphQLClient(
       cache: GraphQLCache(),
       link: HttpLink(
@@ -47,8 +45,18 @@ class Hexabase {
     Hexabase._instance = this;
   }
 
-  Future<bool> login(String email, String password) {
-    return HexabaseUser.login(email, password);
+  Future<bool> login(Map<String, String?> params) async {
+    if (params.containsKey('token') && params['token'] != null) {
+      await setToken(params['token']!);
+      return true;
+    }
+    if (!params.containsKey('email') || !params.containsKey('password')) {
+      throw Exception('Email and password are required');
+    }
+    if (params['email'] == null || params['password'] == null) {
+      throw Exception('Email and password are required');
+    }
+    return HexabaseUser.login(params['email']!, params['password']!);
   }
 
   Future<bool> loginAuth0(String token) {
@@ -83,30 +91,22 @@ class Hexabase {
     return token != null;
   }
 
-  Future<HexabaseWorkspace> current(String workspaceId) async {
-    final response =
-    await HexabaseBase.query(GRAPHQL_SELECT_WORKSPACE, variables: {
-      'setCurrentWorkSpaceInput': {
-        'workspace_id': workspaceId,
-      }
-    });
-    final result = response?.data?['setCurrentWorkSpace']?['success'] as bool?;
-    if (result == null || result == false) {
-      throw Exception('Not Found Workspace');
-    }
-    return HexabaseWorkspace(id: workspaceId);
+  Future<HexabaseWorkspace> setWorkspace(String workspaceId) async {
+    currentWorkspace = await HexabaseWorkspace.current(workspaceId);
+    return currentWorkspace;
   }
 
   HexabaseWorkspace workspace({String? id}) {
-    return HexabaseWorkspace(id: id);
+    if (id == null) return HexabaseWorkspace();
+    return HexabaseWorkspace(params: {'id': id});
   }
 
-  Future<List<HexabaseWorkspace>> workspaces() {
-    return _workspace.all();
-  }
-
-  HexabaseProject project({String? id}) {
-    return HexabaseProject(id: id);
+  Future<List<HexabaseWorkspace>> workspaces() async {
+    if (_workspaces.isNotEmpty) {
+      return Future.value(_workspaces);
+    }
+    _workspaces = await HexabaseWorkspace.all();
+    return Future.value(_workspaces);
   }
 
   Future<List<HexabaseGroup>> groups() {

@@ -44,7 +44,7 @@ class HexabaseItem extends HexabaseBase {
 
   // private
   var _updateStatus = false;
-  HexabaseItem({this.id, this.datastore, this.project}): super() {
+  HexabaseItem({this.id, this.datastore, this.project}) : super() {
     updatedAt = null;
   }
 
@@ -201,13 +201,13 @@ class HexabaseItem extends HexabaseBase {
         updatedBy = value as String;
         break;
       case 'd_id':
-        datastore = HexabaseDatastore(id: value as String);
+        datastore = HexabaseDatastore(params: {'id': value});
         break;
       case 'i_id':
         id = value as String;
         break;
       case 'p_id':
-        project = HexabaseProject(id: value as String);
+        project = HexabaseProject(params: {'id': value});
         break;
       case 'rev_no':
         if (value is int) {
@@ -426,7 +426,7 @@ class HexabaseItem extends HexabaseBase {
     if (_updateStatus) {
       return updateStatus();
     }
-    var itemActionParameters =  await toJson();
+    var itemActionParameters = await toJson();
     itemActionParameters['comment'] = comment ?? '';
     final response =
         await HexabaseBase.mutation(GRAPHQL_DATASTORE_UPDATE_ITEM, variables: {

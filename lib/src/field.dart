@@ -22,7 +22,7 @@ enum HexabaseFieldType {
 class HexabaseField extends HexabaseBase {
   final HexabaseDatastore datastore;
   String? id;
-  late Map<String, String> _name = {};
+  final Map<String, String> _name = {};
 
   late String displayId;
   late HexabaseFieldType dataType;

@@ -13,7 +13,7 @@ void main() {
         : await File('./$path').readAsString();
     var keys = json.decode(str);
     var client = Hexabase();
-    await client.login(keys['email'], keys['password']);
+    await client.login({'email': keys['email'], 'password': keys['password']});
   });
 
   test('Check login', () async {
@@ -35,7 +35,6 @@ void main() {
   test('Get all workspaces', () async {
     var client = Hexabase.instance;
     var workspaces = await client.workspaces();
-    print(workspaces.map((e) => e.id));
     expect(workspaces[0].id, isNot(''));
     expect(workspaces[0].name, isNot(''));
   });

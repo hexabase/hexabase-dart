@@ -54,7 +54,110 @@ class HexabaseDatastore extends HexabaseBase {
 
   List<HexabaseField>? _fields;
 
-  HexabaseDatastore({this.id, this.project}) : super();
+  HexabaseDatastore({Map<String, dynamic>? params}) : super() {
+    if (params != null) sets(params);
+  }
+
+  HexabaseDatastore sets(Map<String, dynamic> params) {
+    params.forEach((key, value) => set(key, value));
+    return this;
+  }
+
+  HexabaseDatastore set(String key, dynamic value) {
+    switch (key) {
+      case 'd_id':
+      case 'datastore_id':
+        id = value as String;
+        break;
+      /*
+      case 'display_id':
+        displayId = value as String;
+        break;
+      case 'deleted':
+        deleted = value as bool;
+        break;
+      case 'imported':
+        imported = value as bool;
+        break;
+      case 'uploading':
+        uploading = value as bool;
+        break;
+      case 'extend_limit_textarea_length':
+        extendLimitTextareaLength = value as int;
+        break;
+      case 'ignore_save_template':
+        ignoreSaveTemplate = value as bool;
+        break;
+      case 'show_display_id_to_list':
+        showDisplayIdToList = value as bool;
+        break;
+      case 'show_in_menu':
+        showInMenu = value as bool;
+        break;
+      case 'show_info_to_list':
+        showInfoToList = value as bool;
+        break;
+      case 'show_only_dev_mode':
+        showOnlyDevMode = value as bool;
+        break;
+      case 'use_board_view':
+        useBoardView = value as bool;
+        break;
+      case 'use_csv_update':
+        useCsvUpdate = value as bool;
+        break;
+      case 'use_external_sync':
+        useExternalSync = value as bool;
+        break;
+      case 'use_grid_view':
+        useGridView = value as bool;
+        break;
+      case 'use_grid_view_by_default':
+        useGridViewByDefault = value as bool;
+        break;
+      case 'use_qr_download':
+        useQrDownload = value as bool;
+        break;
+      case 'use_replace_upload':
+        useReplaceUpload = value as bool;
+        break;
+      case 'use_status_update':
+        useStatusUpdate = value as bool;
+        break;
+      case 'no_status':
+        noStatus = value as bool;
+        break;
+      case 'display_order':
+        displayOrder = value as int;
+        break;
+      case 'unread':
+        unread = value as double;
+        break;
+      case 'invisible':
+        invisible = value as bool;
+        break;
+      case 'is_external_service':
+        isExternalService = value as bool;
+        break;
+      case 'data_source':
+        dataSource = value as String;
+        break;
+      case 'external_service_data':
+        externalServiceData = value as Map;
+        break;
+      */
+      case 'name':
+        if (value is String) {
+          _name = {'ja': value, 'en': value};
+        } else {
+          _name = value as Map<String, String>;
+        }
+        break;
+      case '__typename':
+        break;
+    }
+    return this;
+  }
 
   HexabaseDatastore name(String language, String name) {
     if (!['ja', 'en'].contains(language)) {
@@ -86,40 +189,25 @@ class HexabaseDatastore extends HexabaseBase {
     return datastores;
   }
 
+  Future<bool> fetch() async {
+    if (id == null) {
+      throw Exception('Datastore id is not set');
+    }
+    final response =
+        await HexabaseBase.query(GRAPHQL_GET_DATASTORE, variables: {
+      'datastoreId': id,
+    });
+    if (response.data != null) {
+      sets(response.data as Map<String, dynamic>);
+      return true;
+    }
+    return false;
+  }
+
   static HexabaseDatastore fromJson(
       HexabaseProject project, Map<String, dynamic> json) {
-    final datastore =
-        HexabaseDatastore(id: json['d_id'] as String, project: project);
-    datastore.displayId = json['display_id'] as String;
-    datastore.deleted = json['deleted'] as bool;
-    datastore.imported = json['imported'] as bool;
-    datastore.uploading = json['uploading'] as bool;
-    //ws_name: String
-    datastore
-        .name('ja', json['name'] as String)
-        .name('en', json['name'] as String);
-    datastore.useBoardView = json['use_board_view'] as bool;
-    datastore.useGridView = json['use_grid_view'] as bool;
-    datastore.useGridViewByDefault = json['use_grid_view_by_default'] as bool;
-    datastore.showInMenu = json['show_in_menu'] as bool;
-    datastore.useCsvUpdate = json['use_csv_update'] as bool;
-    datastore.useQrDownload = json['use_qr_download'] as bool;
-    datastore.useReplaceUpload = json['use_replace_upload'] as bool;
-    datastore.useExternalSync = json['use_external_sync'] as bool;
-    datastore.showOnlyDevMode = json['show_only_dev_mode'] as bool;
-    datastore.showDisplayIdToList = json['show_display_id_to_list'] as bool;
-    datastore.showInfoToList = json['show_info_to_list'] as bool;
-    datastore.noStatus = json['no_status'] as bool;
-    datastore.displayOrder = json['display_order'] as int;
-    int unread = json['unread'] as int;
-    datastore.unread = unread.toDouble();
-    datastore.invisible = json['invisible'] as bool;
-    datastore.isExternalService = json['is_external_service'] as bool;
-    datastore.dataSource = json['data_source'] as String;
-    if (json['external_service_data'] != null) {
-      datastore.externalServiceData = json['external_service_data'] as Map;
-    }
-    return datastore;
+    json['project'] = project;
+    return HexabaseDatastore(params: json);
   }
 
   Future<HexabaseDatastore> create(String templateName, String lang) async {

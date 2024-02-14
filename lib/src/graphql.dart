@@ -66,6 +66,19 @@ const String GRAPHQL_DELETE_PROJECT = r'''
   }
 ''';
 
+const String GRAPHQL_GET_PROJECT = r'''
+  query Query($projectId: String!) {
+    getInfoProject(projectId: $projectId) {
+      p_id
+      display_order
+      template_id
+      display_id
+      name
+      w_id
+    }
+  }
+''';
+
 const String GRAPHQL_CREATE_WORKSPACE = r'''
   mutation createWorkspace($createWorkSpaceInput: CreateWorkSpaceInput!) {
     createWorkspace(createWorkSpaceInput: $createWorkSpaceInput) {
@@ -174,6 +187,56 @@ const String GRAPHQL_DATASTORE_CREATE_NEW_ITEM = r'''
       history_id
       item
       item_id
+    }
+  }
+''';
+
+const String GRAPHQL_GET_DATASTORE = r'''
+  query DatastoreSetting($datastoreId: String!) {
+    datastoreSetting(datastoreId: $datastoreId) {
+      display_id
+      names
+      id
+      field_layout {
+        display_id
+        col
+        id
+        row
+        size_x
+        size_y
+      }
+      fields {
+        as_title
+        data_type
+        display_id
+        display_name
+        field_index
+        full_text
+        id
+        max_value
+        min_value
+        names
+        options {
+          o_id
+          _key
+          fieldID
+        }
+        show_list
+        search
+        status
+        title_order
+        unique
+      }
+      roles {
+        name
+        id
+        display_id
+      }
+      statuses {
+        names
+        display_id
+        id
+      }
     }
   }
 ''';
