@@ -68,6 +68,8 @@ void main() {
     expect(testAutonumber is String, isTrue);
     var testNumber = item.get('test_number');
     expect(testNumber is int, isTrue);
+    var testDatetime = item.get('test_datetime');
+    expect(testDatetime is DateTime, isTrue);
     var testFile = item.get('test_file');
     expect(testFile is List, isTrue);
     expect(testFile[0] is HexabaseFile, isTrue);
@@ -80,6 +82,81 @@ void main() {
     var testDslookup2 = item.get('test_dslookup2');
     expect(testDslookup2 is HexabaseItem, isTrue);
     expect(testDslookup2.datastore is HexabaseDatastore, isTrue);
+  });
+
+  test('Set item to wrong value', () async {
+    var keys = await loadFile();
+    var client = Hexabase.instance;
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
+    var item = await datastore.item();
+    try {
+      item.set('name', 100); // No field name
+      expect(false, isTrue);
+    } catch (e) {
+      expect(e is Exception, isTrue);
+    }
+    try {
+      item.set('test_text', 100); // Wrong type
+      expect(false, isTrue);
+    } catch (e) {
+      expect(e is Exception, isTrue);
+    }
+    try {
+      item.set('test_number', 'test_number'); // Number
+      expect(false, isTrue);
+    } catch (e) {
+      expect(e is Exception, isTrue);
+    }
+    try {
+      item.set('test_autonum', 'test_text_unique'); // Wrong type
+      expect(false, isTrue);
+    } catch (e) {
+      expect(e is Exception, isTrue);
+    }
+    try {
+      item.set('test_autonum', 'test_text_unique'); // Wrong type
+      expect(false, isTrue);
+    } catch (e) {
+      expect(e is Exception, isTrue);
+    }
+    try {
+      item.set('test_datetime', 'test_text_unique'); // Wrong type
+      expect(false, isTrue);
+    } catch (e) {
+      expect(e is Exception, isTrue);
+    }
+    item.set('test_datetime', "2020-01-01 00:00:00");
+    var d = item.get<DateTime>('test_datetime');
+    expect(d is DateTime, isTrue);
+  });
+  test('Set select to item', () async {
+    var keys = await loadFile();
+    var client = Hexabase.instance;
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
+    var item = await datastore.item();
+    var field = await datastore.field('test_select');
+    item.set('test_select', field.options().first);
+    await item.save();
+    expect(item.id, isNot(''));
+    await item.delete();
+  });
+  test('Set multiple to item', () async {
+    var keys = await loadFile();
+    var client = Hexabase.instance;
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
+    var item = await datastore.item();
+    var field = await datastore.field('test_checkbox');
+    var options = field.options();
+    var values = [options[0], options[1]].map((o) => o!.value).toList();
+    item.set('test_checkbox', [options[0], options[1]]);
+    await item.save();
+    expect(item.id, isNot(''));
+    var selected = item.get<List<HexabaseFieldOption?>>('test_checkbox');
+    await item.delete();
+    expect(selected.map((h) => (h as HexabaseFieldOption).value), values);
   });
   test('Create item with image', () async {
     var keys = await loadFile();

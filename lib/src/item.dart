@@ -8,7 +8,7 @@ import 'package:eventsource/eventsource.dart';
 import 'package:hexabase/src/field.dart';
 
 class HexabaseItem extends HexabaseBase {
-  late String? id;
+  late String id = '';
   late String? status;
   late String? statusId;
   late String? title;
@@ -119,8 +119,7 @@ class HexabaseItem extends HexabaseBase {
     var items = ary.map((data) {
       data = data as Map<String, dynamic>;
       data.addAll({'datastore': datastore});
-      var item = HexabaseItem(params: data);
-      return item;
+      return HexabaseItem(params: data);
     }).toList();
     return Tuple2(
         response.data!['datastoresGlobalSearch']['item_list']['totalItems']
@@ -243,14 +242,6 @@ class HexabaseItem extends HexabaseBase {
           _fields[key] = item;
         });
         break;
-      case '__typename':
-      case 'd_id':
-      case 'p_id':
-      case 'w_id':
-      case 'status_list':
-      case 'status_action_order':
-      case 'item_action_order':
-        break;
       case 'item_actions':
         var params = value as Map<String, dynamic>;
         _actions = params.keys.map((key) {
@@ -277,6 +268,14 @@ class HexabaseItem extends HexabaseBase {
           setFieldValue(key, params[key]['value']);
         }
         break;
+      case '__typename':
+      case 'd_id':
+      case 'p_id':
+      case 'w_id':
+      case 'status_list':
+      case 'status_action_order':
+      case 'item_action_order':
+        break;
       default:
         setFieldValue(key, value);
     }
@@ -285,9 +284,6 @@ class HexabaseItem extends HexabaseBase {
 
   HexabaseItem setFieldValue(String key, dynamic value) {
     var field = datastore!.fieldSync(key);
-    if (!field.valid(value)) {
-      throw Exception("Invalid value for field $key, value $value");
-    }
     if (field.dataType == HexabaseFieldType.status) {
       status = value;
     } else {
@@ -356,8 +352,12 @@ class HexabaseItem extends HexabaseBase {
     return HexabaseItem();
   }
 
+  bool isNew() {
+    return id == '';
+  }
+
   Future<bool> save({String? comment = ""}) {
-    if (id == null) {
+    if (id == '') {
       return create();
     } else {
       return update(comment: comment);
@@ -426,24 +426,8 @@ class HexabaseItem extends HexabaseBase {
         });
     var data =
         response.data!['getDatastoreItemDetails'] as Map<String, dynamic>;
-    // set('title', data['title']).set('rev_no', data['rev_no']);
-    // _setStatusList(data['status_list'] as Map<String, dynamic>);
-    // set actions
     await datastore?.project?.datastores();
     sets(data);
-    // _setStatusActions(data['status_actions'] as Map<String, dynamic>);
-    /*
-    var params = data['field_values'] as Map<String, dynamic>;
-    params.forEach((key, value) {
-      value = value as Map<String, dynamic>;
-      if (value['dataType'] == 'status') {
-        status = value['value'];
-      } else {
-        set(key, value['value']);
-      }
-      _fieldTypes[key] = value['dataType'] as String;
-    });
-    */
     return true;
   }
 
@@ -531,19 +515,9 @@ class HexabaseItem extends HexabaseBase {
     var json = <String, dynamic>{};
     json["item"] = {};
     _fields.forEach((key, value) async {
-      if (value is DateTime) {
-        value = value.toIso8601String();
-      } else if (value is HexabaseFile) {
-        _uploadFile[key] = value;
-      } else if (value is List &&
-          value.isNotEmpty &&
-          value[0] is HexabaseFile) {
-        _uploadFile[key] = value;
-      } else if (value is HexabaseItem) {
-        // ignore
-      } else {
-        json["item"][key] = value;
-      }
+      var field = datastore!.fieldSync(key);
+      if (!field.savable()) return;
+      json["item"][key] = field.jsonValue(value);
     });
     if (revNo > 0) {
       json['rev_no'] = revNo;
@@ -555,7 +529,6 @@ class HexabaseItem extends HexabaseBase {
     json['return_item_result'] = returnItemResult;
     json['return_actionscript_logs'] = returnActionscriptLogs;
     json['disable_linker'] = disableLinker;
-    print(json);
     return json;
   }
 

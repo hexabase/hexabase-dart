@@ -365,7 +365,7 @@ class HexabaseDatastore extends HexabaseBase {
         field.displayId == name ||
         field.id == name);
     if (field == null) {
-      throw Exception("Field $name is not found in datastore ($this!.id)");
+      throw Exception("Field $name is not found in datastore ($id)");
     }
     return field;
   }
@@ -376,6 +376,13 @@ class HexabaseDatastore extends HexabaseBase {
     if (project == null) throw Exception('Project is required');
     _fields = await HexabaseField.all(this);
     return _fields!;
+  }
+
+  Future<HexabaseField> field(String name) async {
+    if (_fields == null) {
+      await fields();
+    }
+    return fieldSync(name);
   }
 
   Future<List<HexabaseFieldResult>> searchConditions() async {

@@ -170,9 +170,12 @@ class HexabaseField extends HexabaseBase {
     switch (dataType) {
       case HexabaseFieldType.text:
       case HexabaseFieldType.textarea:
-      case HexabaseFieldType.autonum:
         if (value == null) return true;
         return value is String;
+      case HexabaseFieldType.autonum:
+        if (value == null) return true;
+        if (RegExp(r'^[0-9]+$').hasMatch(value)) return true;
+        break;
       case HexabaseFieldType.calc:
       case HexabaseFieldType.number:
         if (value == null) return true;
@@ -197,9 +200,11 @@ class HexabaseField extends HexabaseBase {
         if (o != null) return true;
         break;
       case HexabaseFieldType.checkbox:
+        if (value == null) return true;
         if (value is List) {
           for (var element in value) {
-            if (element is! String) return false;
+            var o = option(element);
+            if (o == null) return false;
           }
           return true;
         }
@@ -247,6 +252,9 @@ class HexabaseField extends HexabaseBase {
   }
 
   dynamic convert(dynamic value, HexabaseItem item) {
+    if (!valid(value)) {
+      throw Exception('Invalid value for ${name('en')}, $value');
+    }
     if (value == null) return null;
     switch (dataType) {
       case HexabaseFieldType.file:
@@ -284,7 +292,7 @@ class HexabaseField extends HexabaseBase {
         if (value is! List) {
           throw Exception('Invalid checkbox value for ${name('en')}, $value');
         }
-        return options(value);
+        return options(value: value);
       case HexabaseFieldType.users:
         if (value is! List) {
           throw Exception('Invalid users value for ${name('en')}, $value');
@@ -316,7 +324,8 @@ class HexabaseField extends HexabaseBase {
         option.id == value);
   }
 
-  List<HexabaseFieldOption?> options(List<dynamic> value) {
+  List<HexabaseFieldOption?> options({List<dynamic>? value}) {
+    if (value == null) return _options;
     return value.map((v) => option(v)).toList();
   }
 
@@ -332,6 +341,61 @@ class HexabaseField extends HexabaseBase {
 
   List<HexabaseUser?> users(List<dynamic> value) {
     return value.map((v) => user(v)).toList();
+  }
+
+  dynamic jsonValue(dynamic value) {
+    if (!valid(value)) {
+      throw Exception('Invalid value for ${name('en')}, $value');
+    }
+    if (value == null) return null;
+    switch (dataType) {
+      case HexabaseFieldType.text:
+      case HexabaseFieldType.textarea:
+      case HexabaseFieldType.number:
+      case HexabaseFieldType.datetime:
+        return value;
+      case HexabaseFieldType.select:
+      case HexabaseFieldType.radio:
+        return (value as HexabaseFieldOption).displayId;
+      case HexabaseFieldType.checkbox:
+        return (value as List)
+            .map((v) => (v as HexabaseFieldOption).displayId)
+            .toList();
+      case HexabaseFieldType.file:
+        break;
+      case HexabaseFieldType.users:
+        return (value as List).map((v) => (v as HexabaseUser).id).toList();
+      case HexabaseFieldType.dslookup:
+        return (value as HexabaseItem).id;
+      case HexabaseFieldType.status:
+      case HexabaseFieldType.label:
+      case HexabaseFieldType.separator:
+      case HexabaseFieldType.autonum:
+      case HexabaseFieldType.calc:
+        return null;
+    }
+  }
+
+  bool savable() {
+    switch (dataType) {
+      case HexabaseFieldType.text:
+      case HexabaseFieldType.textarea:
+      case HexabaseFieldType.number:
+      case HexabaseFieldType.datetime:
+      case HexabaseFieldType.select:
+      case HexabaseFieldType.radio:
+      case HexabaseFieldType.checkbox:
+      case HexabaseFieldType.file:
+      case HexabaseFieldType.users:
+      case HexabaseFieldType.dslookup:
+      case HexabaseFieldType.status:
+        return true;
+      case HexabaseFieldType.label:
+      case HexabaseFieldType.separator:
+      case HexabaseFieldType.autonum:
+      case HexabaseFieldType.calc:
+        return false;
+    }
   }
 
   Future<bool> save() async {
