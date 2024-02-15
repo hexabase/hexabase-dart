@@ -13,7 +13,7 @@ void main() {
         : await File('./$path').readAsString();
     var keys = json.decode(str);
     var client = Hexabase();
-    await client.login({'email': keys['email'], 'password': keys['password']});
+    await client.login(keys['email'], keys['password']);
   });
 
   test('Check login', () async {

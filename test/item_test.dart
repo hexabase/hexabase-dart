@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hexabase/hexabase.dart';
+import 'package:hexabase/src/field_option.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:path/path.dart';
@@ -21,30 +22,77 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase();
     await client.login(keys['email'], keys['password']);
+    await client.setWorkspace(keys['workspace']);
   });
   test('Create item', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore(id: keys['datastore']);
-    var item = datastore.item();
+    var item = await datastore.item();
     item.set('name', 'スイカ').set('price', 100);
     await item.save();
     item.set('price', 110).set('salesDate', DateTime.now());
     await item.save();
     await item.delete();
   });
+
+  test('Get item for check value', () async {
+    var keys = await loadFile();
+    var client = Hexabase.instance;
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
+    var item = await datastore.item(id: keys['item']);
+
+    var title = item.get('title');
+    expect(title is String, isTrue);
+    var realatedKey = item.get('related_key');
+    expect(realatedKey is String, isTrue);
+    var testText = item.get('test_text');
+    expect(testText is String, isTrue);
+    var testTextUnique = item.get('test_text_unique');
+    expect(testTextUnique is String, isTrue);
+    var testTextarea = item.get('test_textarea');
+    expect(testTextarea is String, isTrue);
+    var testSelect = item.get('test_select');
+    expect(testSelect is HexabaseFieldOption, isTrue);
+    expect(testSelect.value is String, isTrue);
+    var testRadio = item.get('test_radio');
+    expect(testRadio is HexabaseFieldOption, isTrue);
+    expect(testRadio.value is String, isTrue);
+    var testCheckbox = item.get('test_checkbox');
+    expect(testCheckbox is List, isTrue);
+    expect(testCheckbox[0] is HexabaseFieldOption, isTrue);
+    expect(testCheckbox[0].value is String, isTrue);
+    var testAutonumber = item.get('test_autonum');
+    expect(testAutonumber is String, isTrue);
+    var testNumber = item.get('test_number');
+    expect(testNumber is int, isTrue);
+    var testFile = item.get('test_file');
+    expect(testFile is List, isTrue);
+    expect(testFile[0] is HexabaseFile, isTrue);
+    var testUsers = item.get('test_users');
+    expect(testUsers is List, isTrue);
+    expect(testUsers[0] is HexabaseUser, isTrue);
+    var testDslookup = item.get('test_dslookup');
+    expect(testDslookup is HexabaseItem, isTrue);
+    expect(testDslookup.datastore is HexabaseDatastore, isTrue);
+    var testDslookup2 = item.get('test_dslookup2');
+    expect(testDslookup2 is HexabaseItem, isTrue);
+    expect(testDslookup2.datastore is HexabaseDatastore, isTrue);
+  });
   test('Create item with image', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore(id: keys['datastore']);
-    var item = datastore.item();
+    var item = await datastore.item();
     item.set('name', 'スイカ').set('price', 120);
     var filePath = './test/test.png';
-    var file = HexabaseFile(
-        name: basename(filePath),
-        contentType: lookupMimeType(filePath) ?? "application/octet-stream");
+    var file = HexabaseFile(params: {
+      'name': basename(filePath),
+      'contentType': lookupMimeType(filePath) ?? "application/octet-stream",
+    });
     file.data = File(filePath).readAsBytesSync();
     item.set('picture', file);
     await item.save();
@@ -59,15 +107,16 @@ void main() {
   test('Create item with images', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore(id: keys['datastore']);
-    var item = datastore.item();
+    var item = await datastore.item();
     item.set('name', 'スイカ').set('price', 120);
     var filePaths = ['./test/test.png', './test/test2.png'];
     for (var filePath in filePaths) {
-      var file = HexabaseFile(
-          name: basename(filePath),
-          contentType: lookupMimeType(filePath) ?? "application/octet-stream");
+      var file = HexabaseFile(params: {
+        'name': basename(filePath),
+        'contentType': lookupMimeType(filePath) ?? "application/octet-stream"
+      });
       file.data = File(filePath).readAsBytesSync();
       item.add('picture', file);
     }
@@ -86,7 +135,7 @@ void main() {
   test('Delete old items', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore(id: keys['datastore']);
     var query = datastore.query();
     query.equalTo('price', 120).per(100);
@@ -99,7 +148,8 @@ void main() {
   test('Get linked item', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: '63dcd13c8f194b1a50423a1c');
+    var project =
+        await client.currentWorkspace.project(id: '63dcd13c8f194b1a50423a1c');
     var datastore = await project.datastore(id: '6422443794359331a66264a5');
     var query = datastore.query();
     query.per(100).include(true);
@@ -115,21 +165,21 @@ void main() {
   test('Change item status', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore(id: keys['datastore']);
-    var item = datastore.item();
+    var item = await datastore.item();
     item.set('name', 'スイカ').set('price', 100);
     await item.save();
-    print(item.actions().map((e) => e.name));
+    print((await item.actions()).map((e) => e.name));
     item.action('startReservation').set('price', 110);
     await item.save();
-    print(item.actions().map((e) => e.name));
+    print((await item.actions()).map((e) => e.name));
     await item.delete();
   });
   test('Subscribe item', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore(id: keys['datastore']);
     var items = await datastore.items();
     var item = items.first;

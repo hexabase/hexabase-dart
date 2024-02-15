@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
+import 'package:hexabase/src/user_role.dart';
 import 'package:hexabase/src/graphql.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,19 +9,66 @@ import 'package:shared_preferences/shared_preferences.dart';
 class HexabaseUser extends HexabaseBase {
   late String? id;
   late String? name;
+  late String? email;
+  late String? profilePicture;
+  late HexabaseWorkspace? currentWorkspace;
+  late List<HexabaseUserRole> roles = [];
+  late bool isWsAdmin;
+
   static late SharedPreferences prefs;
   static String tokenName = 'token';
 
-  HexabaseUser() : super();
+  HexabaseUser({Map<String, dynamic>? params}) : super() {
+    if (params != null) sets(params);
+  }
 
-  static Future<HexabaseUser?> getCurrentUser() async {
+  HexabaseUser sets(Map<String, dynamic> params) {
+    params.forEach((key, value) => set(key, value));
+    return this;
+  }
+
+  HexabaseUser set(String key, dynamic value) {
+    switch (key) {
+      case 'username':
+        name = value as String;
+        break;
+      case 'email':
+        email = value as String;
+        break;
+      case 'profile_pic':
+        profilePicture = value as String;
+        break;
+      case 'current_workspace_id':
+        currentWorkspace = HexabaseWorkspace(params: {'id': value as String});
+        break;
+      case 'user_roles':
+        roles = (value as List)
+            .map((e) => HexabaseUserRole(params: e as Map<String, dynamic>))
+            .toList();
+        break;
+      case 'is_ws_admin':
+        isWsAdmin = value as String == 'true' || value as bool;
+        break;
+      case 'id':
+      case 'u_id':
+        id = value as String;
+        break;
+      case '__typename':
+        break;
+    }
+    return this;
+  }
+
+  static Future<HexabaseUser?> current() async {
     if (HexabaseBase.client.currentUser != null) {
       return HexabaseBase.client.currentUser;
     }
-    final prefs = await SharedPreferences.getInstance();
-    var token = prefs.getString(tokenName);
-    if (token != null) {
-      _setJwt(token);
+    if (HexabaseBase.client.persistence == Hexabase.persistenceLocal) {
+      final prefs = await SharedPreferences.getInstance();
+      var token = prefs.getString(tokenName);
+      if (token != null) {
+        _setJwt(token);
+      }
     }
     return HexabaseBase.client.currentUser;
   }
@@ -38,9 +86,11 @@ class HexabaseUser extends HexabaseBase {
   }
 
   Future<bool> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (prefs.containsKey(tokenName)) {
-      await prefs.remove(tokenName);
+    if (HexabaseBase.client.persistence == Hexabase.persistenceLocal) {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.containsKey(tokenName)) {
+        await prefs.remove(tokenName);
+      }
     }
     HexabaseBase.client.currentUser = null;
     try {
@@ -70,6 +120,15 @@ class HexabaseUser extends HexabaseBase {
     }
     _setJwt(token);
     return true;
+  }
+
+  Future<bool> fetch() async {
+    final response = await HexabaseBase.query(GRAPHQL_USER_INFO);
+    if (response.data != null && response.data!['userInfo'] != null) {
+      sets(response.data!['userInfo'] as Map<String, dynamic>);
+      return true;
+    }
+    return false;
   }
 
   static void _setJwt(String token) {

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hexabase/hexabase.dart';
 import 'dart:io';
@@ -17,12 +18,13 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase();
     await client.login(keys['email'], keys['password']);
+    await client.setWorkspace(keys['workspace']);
   });
 
   test('Get search conditions', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var query = datastore.query();
@@ -37,7 +39,7 @@ void main() {
   test('Get search conditions with greather or equal', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var query = datastore.query();
@@ -52,7 +54,7 @@ void main() {
   test('Get search conditions with less or equal', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var query = datastore.query();
@@ -66,7 +68,7 @@ void main() {
   test('Get search conditions with geather or equal w/ time', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 11, 0, 0, 0);
@@ -81,7 +83,7 @@ void main() {
   test('Get search conditions with less or equal w/ time', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 9, 0, 0, 0);
@@ -96,7 +98,7 @@ void main() {
   test('Get search conditions with geather w/ time', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore(id: keys['datastore']);
     var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 10);
@@ -115,27 +117,27 @@ void main() {
   test('Get search conditions with less w/ time', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
-    var datastore = await project.datastore(id: keys['datastore']);
-    var res = await datastore.searchConditions();
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
+    // var res = await datastore.searchConditions();
     var date = DateTime(2022, 9, 10);
     var query = datastore.query();
     query.page(1).per(10).displayId(true);
-    query.lessThan("salesDate", date);
+    query.lessThan("test_datetime", date);
     var items = await datastore.items(query: query);
-    print(items[0].get("salesDate"));
+    print(items[0].get("test_datetime"));
     var response = await datastore.itemsWithCount(query: query);
     print(response.count);
     query.clear();
-    query.lessThan("price", 500);
+    query.lessThan("test_number", 500);
     response = await datastore.itemsWithCount(query: query);
     print(response.count);
   });
   test('Search items', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: "63d3266a05e6189afa128121");
-    var datastore = await project.datastore(id: "63d32682c230cd193d13acdd");
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
     var response = await datastore.search(HBSearchType.history, "コメント");
     print(response.count);
     if (response.items.length > 0) {
@@ -146,40 +148,62 @@ void main() {
   test('create datastore', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
-    project.workspace = HexabaseWorkspace(id: keys['workspace']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore();
-    print(datastore.id);
+    var name = {'ja': 'テストデータストア', 'en': 'Test Datastore'};
+    datastore.set('name', name);
+    datastore.displayId = 'TestDatastore';
+    datastore.ignoreSaveTemplate = true;
+    await datastore.save();
+    expect(datastore.id, isNot(''));
+    expect(datastore.name('ja'), name['ja']);
+    await datastore.delete();
   });
 
   test('update datastore', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
-    project.workspace = HexabaseWorkspace(id: keys['workspace']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    // project.workspace = HexabaseWorkspace(id: keys['workspace']);
     var datastore = await project.datastore();
-    print(datastore.id);
-    datastore.name('ja', 'テストデータストア').name('en', 'Test Datastore');
+    datastore.set('name', {'ja': 'テストデータストア', 'en': 'Test Datastore'});
     datastore.displayId = 'TestDatastore';
     datastore.ignoreSaveTemplate = true;
     await datastore.save();
+    expect(datastore.id, isNot(''));
+    var name = {'ja': 'データストア', 'en': 'Datastore'};
+    datastore.set('name', name);
+    await datastore.save();
+    expect(datastore.name('ja'), name['ja']);
+    await datastore.delete();
   });
-
   test('Fetch all datastores', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
-    // var datastores = await project.datastores();
-    // print(datastores);
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    var datastores = await project.datastores();
+    expect(datastores.length, isNot(0));
   });
 
-  test('Delete all datastores', () async {
+  test('Delete datastore', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
-    var datastores = await project.datastores();
-    for (var d in datastores) {
-      print(await d.delete());
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    var datastore = await project.datastore();
+    datastore.set('name', {'ja': 'テストデータストア', 'en': 'Test Datastore'});
+    datastore.displayId = 'TestDatastore';
+    datastore.ignoreSaveTemplate = true;
+    await datastore.save();
+    expect(datastore.id, isNot(''));
+    await datastore.delete();
+    await Future.delayed(const Duration(seconds: 3));
+    var datastores = await project.datastores(refresh: true);
+    expect(datastores.length, isNonZero);
+    if (datastores.isNotEmpty) {
+      var d = datastores.firstWhereOrNull((d) => d.id == datastore.id);
+      expect(d, null);
+    } else {
+      expect(true, false);
     }
   });
 }

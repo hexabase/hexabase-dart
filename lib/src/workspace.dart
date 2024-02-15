@@ -39,6 +39,7 @@ class HexabaseWorkspace extends HexabaseBase {
         name = value as String;
         break;
       case 'w_id':
+      case 'id':
       case 'workspace_id':
         id = value as String;
         break;

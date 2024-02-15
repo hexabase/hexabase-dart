@@ -125,7 +125,7 @@ class HexabaseProject extends HexabaseBase {
   }
 
   Future<bool> fetch() async {
-    if (id == null) {
+    if (id == '') {
       throw Exception('Project id is not set');
     }
     final response = await HexabaseBase.query(GRAPHQL_GET_PROJECT, variables: {
@@ -138,28 +138,41 @@ class HexabaseProject extends HexabaseBase {
     return false;
   }
 
+  HexabaseDatastore datastoreSync({String? id}) {
+    if (_datastores.isEmpty) {
+      throw Exception('Datastores are not fetched');
+    }
+    if (id != null) {
+      var datastore = _datastores.firstWhereOrNull(
+        (datastore) => datastore.id == id,
+      );
+      if (datastore == null) throw Exception('Datastore $id is not found');
+      return datastore;
+    }
+    return HexabaseDatastore(params: {'project': this});
+  }
+
   Future<HexabaseDatastore> datastore({String? id}) async {
     if (_datastores.isEmpty) {
       await datastores();
     }
     if (id != null) {
-      var ds = _datastores.firstWhereOrNull(
+      var datastore = _datastores.firstWhereOrNull(
         (datastore) => datastore.id == id,
       );
-      if (ds == null) throw Exception('Datastore $id is not found');
-      return ds;
+      if (datastore == null) throw Exception('Datastore $id is not found');
+      await datastore.fetch();
+      return datastore;
     }
-    var ds = HexabaseDatastore(params: {'project': this});
-    await ds.save();
-    return datastore(id: ds.id);
+    return HexabaseDatastore(params: {'project': this});
   }
 
   Future<List<HexabaseDatastore>> datastores(
-      {List<HexabaseDatastore>? datastores}) async {
+      {List<HexabaseDatastore>? datastores, bool? refresh}) async {
     if (datastores != null) {
       _datastores = datastores;
     }
-    if (_datastores.isEmpty) {
+    if (_datastores.isEmpty || refresh == true) {
       _datastores = await HexabaseDatastore.all(this);
     }
     return _datastores;

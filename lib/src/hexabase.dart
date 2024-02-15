@@ -45,18 +45,11 @@ class Hexabase {
     Hexabase._instance = this;
   }
 
-  Future<bool> login(Map<String, String?> params) async {
-    if (params.containsKey('token') && params['token'] != null) {
-      await setToken(params['token']!);
-      return true;
-    }
-    if (!params.containsKey('email') || !params.containsKey('password')) {
+  Future<bool> login(String email, String password) async {
+    if (email == '' || password == '') {
       throw Exception('Email and password are required');
     }
-    if (params['email'] == null || params['password'] == null) {
-      throw Exception('Email and password are required');
-    }
-    return HexabaseUser.login(params['email']!, params['password']!);
+    return HexabaseUser.login(email, password);
   }
 
   Future<bool> loginAuth0(String token) {
@@ -75,12 +68,13 @@ class Hexabase {
   }
 
   Future<HexabaseUser?> getCurrentUser() {
-    return HexabaseUser.getCurrentUser();
+    return HexabaseUser.current();
   }
 
   Future<bool> isLogin() async {
     try {
-      await getCurrentUser();
+      var user = await getCurrentUser();
+      await user!.fetch();
       await workspaces();
     } catch (e) {
       if (currentUser != null) {

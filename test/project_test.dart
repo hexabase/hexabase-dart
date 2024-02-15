@@ -17,7 +17,7 @@ void main() {
   setUp(() async {
     var keys = await loadFile();
     var client = Hexabase();
-    await client.login({'email': keys['email'], 'password': keys['password']});
+    await client.login(keys['email'], keys['password']);
     await client.setWorkspace(keys['workspace']);
   });
 

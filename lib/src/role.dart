@@ -9,9 +9,40 @@ class HexabaseRole extends HexabaseBase {
   late String displayId;
   late DateTime createdAt;
   late String type;
-  HexabaseProject project;
+  late HexabaseProject project;
+  late HexabaseDatastore datastore;
 
-  HexabaseRole(this.project) : super();
+  HexabaseRole({Map<String, dynamic>? params}) : super() {
+    if (params != null) sets(params);
+  }
+
+  HexabaseRole sets(Map<String, dynamic> params) {
+    params.forEach((key, value) => set(key, value));
+    return this;
+  }
+
+  HexabaseRole set(String key, dynamic value) {
+    switch (key) {
+      case 'name':
+        name = value as String;
+        break;
+      case 'id':
+        id = value as String;
+        break;
+      case 'display_id':
+        displayId = value as String;
+        break;
+      case 'datastore':
+        datastore = value as HexabaseDatastore;
+        break;
+      case 'project':
+        project = value as HexabaseProject;
+        break;
+      case '__typename':
+        break;
+    }
+    return this;
+  }
 
   static Future<List<HexabaseRole>> all(HexabaseProject project) async {
     final response =

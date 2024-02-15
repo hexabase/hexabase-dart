@@ -14,6 +14,28 @@ const String GRAPHQL_LOGIN_AUTH0 = r'''
   }
 ''';
 
+const String GRAPHQL_USER_INFO = r'''
+  query UserInfo {
+    userInfo {
+      username
+      email
+      profile_pic
+      u_id
+      current_workspace_id
+      is_ws_admin
+      user_roles {
+        r_id
+        role_name
+        role_id
+        p_id
+        application_id
+        application_name
+        application_display_order
+      }
+    }
+  }
+''';
+
 const String GRAPHQL_WORKSPACES = r'''
   query Workspaces {
     workspaces {

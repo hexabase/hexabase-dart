@@ -12,9 +12,6 @@ class HexabaseFile extends HexabaseBase {
   late Uint8List data;
   late String? fieldId;
   late HexabaseItem? item;
-  late String? projectId;
-  late String? workspaceId;
-  late String? datastoreId;
   late String contentType = "application/octet-stream";
   late DateTime? createdAt;
   late bool? deleted;
@@ -26,14 +23,18 @@ class HexabaseFile extends HexabaseBase {
   late bool? temporary;
   late DateTime? updatedAt;
   late String? userId;
+  late HexabaseField? field;
 
-  HexabaseFile(
-      {this.id,
-      this.name,
-      this.fieldId,
-      this.item,
-      this.contentType = "application/octet-stream"})
-      : super();
+  HexabaseFile({Map<String, dynamic>? params}) : super() {
+    if (params != null) sets(params);
+  }
+
+  HexabaseFile sets(Map<String, dynamic> params) {
+    if (params.containsKey('item')) set('item', params['item']!);
+    if (params.containsKey('field')) set('field', params['field']!);
+    params.forEach((key, value) => set(key, value));
+    return this;
+  }
 
   Future<bool> save() {
     if (id == null) {
@@ -43,29 +44,24 @@ class HexabaseFile extends HexabaseBase {
     }
   }
 
-  HexabaseFile sets(Map<String, dynamic> fields) {
-    fields.forEach((key, value) => set(key, value));
-    return this;
-  }
-
   HexabaseFile set(String key, dynamic value) {
     if (value == null) return this;
-    switch (key.toLowerCase()) {
+    switch (key) {
       case 'name':
       case 'filename':
         name = value as String;
         break;
-      case 'field_id':
-        fieldId = value as String;
+      case 'field':
+        field = value as HexabaseField;
         break;
       case 'data':
         data = value as Uint8List;
         break;
       case 'content_type':
-      case 'contenttype':
+      case 'contentType':
         contentType = value as String;
         break;
-      case 'timecreated':
+      case 'timeCreated':
       case 'created_at':
         createdAt = DateTime.parse(value as String);
         break;
@@ -77,26 +73,8 @@ class HexabaseFile extends HexabaseBase {
       case 'file_id':
         id = value as String;
         break;
-      case 'i_id':
-      case 'item_id':
-        item = HexabaseItem(id: value as String);
-        break;
       case 'item':
         item = value as HexabaseItem;
-        projectId = item!.project!.id;
-        datastoreId = item!.datastore!.id;
-        break;
-      case 'p_id':
-      case 'project_id':
-        projectId = value as String;
-        break;
-      case 'd_id':
-      case 'datastore_id':
-        datastoreId = value as String;
-        break;
-      case 'w_id':
-      case 'workspace_id':
-        workspaceId = value as String;
         break;
       case 'deleted':
         deleted = value as bool;
@@ -110,10 +88,10 @@ class HexabaseFile extends HexabaseBase {
       case 'filepath':
         filepath = value as String;
         break;
-      case 'medialink':
+      case 'mediaLink':
         mediaLink = value as String;
         break;
-      case 'selflink':
+      case 'selfLink':
         selfLink = value as String;
         break;
       case 'size':
@@ -122,8 +100,18 @@ class HexabaseFile extends HexabaseBase {
       case 'user_id':
         userId = value as String;
         break;
+      case 'p_id':
+      case 'project_id':
+      case 'd_id':
+      case 'datastore_id':
+      case 'w_id':
+      case 'workspace_id':
+      case 'field_id':
+      case 'i_id':
+      case 'item_id':
+        break;
       default:
-        throw Exception('Unknown field: $name');
+        throw Exception('Unknown field in HexabaseFile: $key');
     }
     return this;
   }
@@ -166,15 +154,17 @@ class HexabaseFile extends HexabaseBase {
   }
 
   Map<String, dynamic> createJson() {
+    var project = item!.datastore!.project!;
+    var datastore = item!.datastore!;
     return {
       'filename': name!,
       'contentTypeFile': contentType,
       'content': base64.encode(data),
       'field_id': fieldId!,
       'item_id': item!.id!,
-      'filepath': "$projectId/$datastoreId/${item!.id}/$fieldId/$name",
-      'd_id': datastoreId!,
-      'p_id': projectId!,
+      'filepath': "${project.id}/${datastore.id}/${item!.id}/$fieldId/$name",
+      'd_id': datastore.id,
+      'p_id': project.id,
       'display_order': displayOrder,
     };
   }
