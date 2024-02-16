@@ -219,6 +219,7 @@ class HexabaseDatastore extends HexabaseBase {
     var ary = response.data!['datastores'] as List<dynamic>;
     var datastores =
         ary.map((e) => HexabaseDatastore.fromJson(project, e)).toList();
+    await Future.wait(datastores.map((d) => d.fields()));
     project.datastores(datastores: datastores);
     return datastores;
   }

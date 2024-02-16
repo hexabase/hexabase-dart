@@ -13,6 +13,9 @@ class HexabaseDataTypeCheckbox extends HexabaseDataType {
   @override
   bool valid(dynamic value) {
     if (value == null) return true;
+    if (value is String) {
+      value = value.split(",");
+    }
     if (value is List) {
       for (var element in value) {
         var o = option(element);
@@ -25,6 +28,9 @@ class HexabaseDataTypeCheckbox extends HexabaseDataType {
 
   @override
   dynamic convert(dynamic value, HexabaseItem item) {
+    if (value is String) {
+      value = value.split(",");
+    }
     if (value is! List) {
       throw Exception('Invalid checkbox value for ${field.name('en')}, $value');
     }

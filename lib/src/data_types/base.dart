@@ -72,6 +72,9 @@ class HexabaseDataType {
       value = value as Map<String, dynamic>;
       return HexabaseUser(params: value);
     }
+    if (value is String) {
+      return HexabaseUser(params: {'u_id': value});
+    }
     throw Exception('Invalid user value for ${field.name('en')}, $value');
   }
 

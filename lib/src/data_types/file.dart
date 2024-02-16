@@ -13,6 +13,9 @@ class HexabaseDataTypeFile extends HexabaseDataType {
   @override
   bool valid(dynamic value) {
     if (value == null) return true;
+    if (value is String) {
+      value = value.split(",");
+    }
     if (value is List) {
       for (var params in value) {
         if (params is HexabaseFile) continue;
@@ -28,6 +31,12 @@ class HexabaseDataTypeFile extends HexabaseDataType {
 
   @override
   dynamic convert(dynamic value, HexabaseItem item) {
+    if (value is String && value == '') {
+      return null;
+    }
+    if (value is String) {
+      value = value.split(",");
+    }
     if (value is! List) throw Exception('Invalid file value for $value');
     return value.map((data) {
       if (data is HexabaseFile) return data;

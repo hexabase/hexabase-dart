@@ -12,6 +12,7 @@ class HexabaseDataTypeDSlookup extends HexabaseDataType {
   @override
   bool valid(dynamic value) {
     if (value == null) return true;
+    if (value is String) return true;
     if (value is HexabaseItem) return true;
     if (value is Map) {
       if (value.containsKey('d_id') && value.containsKey('item_id')) {
@@ -30,8 +31,14 @@ class HexabaseDataTypeDSlookup extends HexabaseDataType {
       item.set('title', value['title']);
       return item;
     }
+    return value;
   }
 
   @override
-  Future<dynamic> jsonValue(dynamic value) async => (value as HexabaseItem).id;
+  Future<dynamic> jsonValue(dynamic value) async {
+    if (value is HexabaseItem) {
+      return value.id;
+    }
+    return null;
+  }
 }

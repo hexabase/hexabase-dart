@@ -14,8 +14,12 @@ class HexabaseDataTypeUsers extends HexabaseDataType {
   @override
   bool valid(dynamic value) {
     if (value == null) return true;
+    if (value is String) {
+      value = value.split(",");
+    }
     if (value is List) {
       for (var params in value) {
+        if (params is String) continue;
         if (params is! Map) return false;
         if (!params.containsKey('user_name') ||
             !params.containsKey('user_id')) {
@@ -29,6 +33,12 @@ class HexabaseDataTypeUsers extends HexabaseDataType {
 
   @override
   dynamic convert(dynamic value, HexabaseItem item) {
+    if (value is String && value == '') {
+      return null;
+    }
+    if (value is String) {
+      value = value.split(",");
+    }
     if (value is! List) {
       throw Exception('Invalid users value for ${field.name('en')}, $value');
     }

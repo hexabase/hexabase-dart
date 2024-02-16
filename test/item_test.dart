@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hexabase/hexabase.dart';
@@ -45,39 +46,53 @@ void main() {
 
     var title = item.get('title');
     expect(title is String, isTrue);
+
     var realatedKey = item.get('related_key');
     expect(realatedKey is String, isTrue);
+
     var testText = item.get('test_text');
     expect(testText is String, isTrue);
+
     var testTextUnique = item.get('test_text_unique');
     expect(testTextUnique is String, isTrue);
+
     var testTextarea = item.get('test_textarea');
     expect(testTextarea is String, isTrue);
+
     var testSelect = item.get('test_select');
     expect(testSelect is HexabaseFieldOption, isTrue);
     expect(testSelect.value is String, isTrue);
+
     var testRadio = item.get('test_radio');
     expect(testRadio is HexabaseFieldOption, isTrue);
     expect(testRadio.value is String, isTrue);
+
     var testCheckbox = item.get('test_checkbox');
     expect(testCheckbox is List, isTrue);
     expect(testCheckbox[0] is HexabaseFieldOption, isTrue);
     expect(testCheckbox[0].value is String, isTrue);
+
     var testAutonumber = item.get('test_autonum');
     expect(testAutonumber is String, isTrue);
+
     var testNumber = item.get('test_number');
     expect(testNumber is int, isTrue);
+
     var testDatetime = item.get('test_datetime');
     expect(testDatetime is DateTime, isTrue);
+
     var testFile = item.get('test_file');
     expect(testFile is List, isTrue);
     expect(testFile[0] is HexabaseFile, isTrue);
+
     var testUsers = item.get('test_users');
     expect(testUsers is List, isTrue);
     expect(testUsers[0] is HexabaseUser, isTrue);
+
     var testDslookup = item.get('test_dslookup');
     expect(testDslookup is HexabaseItem, isTrue);
     expect(testDslookup.datastore is HexabaseDatastore, isTrue);
+
     var testDslookup2 = item.get('test_dslookup2');
     expect(testDslookup2 is HexabaseItem, isTrue);
     expect(testDslookup2.datastore is HexabaseDatastore, isTrue);
@@ -214,7 +229,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = await client.currentWorkspace.project(id: keys['project']);
-    var datastore = await project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
     var query = datastore.query();
     query.equalTo('price', 120).per(100);
     var items = await datastore.items(query: query);
@@ -226,17 +241,24 @@ void main() {
   test('Get linked item', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project =
-        await client.currentWorkspace.project(id: '63dcd13c8f194b1a50423a1c');
-    var datastore = await project.datastore(id: '6422443794359331a66264a5');
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
     var query = datastore.query();
-    query.per(100).include(true);
+    query
+        .per(100)
+        .include(true)
+        .link(true)
+        .number(true)
+        .displayId(true)
+        .fieldId(true);
+
     var items = await datastore.items(query: query);
-    for (var item in items) {
-      print(item.getAsItem('ProjectId').title);
-      // await item.delete();
-      item.set("cost", 5);
-      await item.save();
+    var ary = items.where((item) {
+      var val = item.get('test_dslookup');
+      return val is HexabaseItem;
+    }).toList();
+    for (var element in ary) {
+      expect(element.get('test_dslookup') is HexabaseItem, isTrue);
     }
   });
 

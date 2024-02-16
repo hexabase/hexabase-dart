@@ -44,6 +44,7 @@ class HexabaseItem extends HexabaseBase {
   late String _action = "";
   late List<HexabaseItemAction> _actions = [];
   late List<String> statusOrder = [];
+  late List<HexabaseItem> _linkItem = [];
 
   // private
   var _updateStatus = false;
@@ -55,13 +56,13 @@ class HexabaseItem extends HexabaseBase {
       HexabaseDatastore datastore, HexabaseItemsParameters params) async {
     var variables = {
       'datastoreId': datastore.id,
-      'getItemsParameters': await params.toJson()
+      'getItemsParameters': await params.toJson(),
     };
 
     if (datastore.project != null) {
       variables['projectId'] = datastore.project!.id;
     }
-    await datastore.fields();
+    await datastore.project!.datastores(refresh: true);
     final response = await HexabaseBase.mutation(
         GRAPHQL_DATASTORE_GET_DATASTORE_ITEMS,
         variables: variables);
@@ -70,7 +71,11 @@ class HexabaseItem extends HexabaseBase {
     var items = ary.map((data) {
       data = data as Map<String, dynamic>;
       data.addAll({'datastore': datastore});
-      return HexabaseItem(params: data);
+      var item = HexabaseItem(params: data);
+      if (data.containsKey('lookup_items')) {
+        item.set('lookup_items', data['lookup_items']);
+      }
+      return item;
     }).toList();
     return Tuple2(
         response.data!['datastoreGetDatastoreItems']['totalItems'] as int,
@@ -217,14 +222,34 @@ class HexabaseItem extends HexabaseBase {
         title = value as String;
         break;
       case 'unread':
-        unread = int.parse(value);
+        if (value is int) {
+          unread = value;
+        } else {
+          unread = int.parse(value as String);
+        }
+        break;
+      case 'item_links':
+        var params = value as Map<String, dynamic>;
+        if (params.containsKey('links') && params['links'] != null) {
+          var links = params['links'] as List<dynamic>;
+          for (var link in links) {
+            link = link as Map<String, dynamic>;
+            var d = datastore!.project!.datastoreSync(id: link['d_id']);
+            for (var item in link['items']) {
+              item = item as Map<String, dynamic>;
+              _linkItem.add(d.itemSync(id: link['i_id']));
+            }
+          }
+        }
         break;
       case 'lookup_items':
         var params = value as Map<String, dynamic>;
         params.forEach((key, value) {
-          var item = HexabaseItem();
-          item.sets(value);
-          _fields[key] = item;
+          (value as Map<String, dynamic>).addAll({
+            'datastore': datastore!.project!.datastoreSync(id: value['d_id'])
+          });
+          var item = HexabaseItem(params: value);
+          setFieldValue(key, item);
         });
         break;
       case 'item_actions':
@@ -265,6 +290,13 @@ class HexabaseItem extends HexabaseBase {
         setFieldValue(key, value);
     }
     return this;
+  }
+
+  Future<List<HexabaseItem>> get linkItems async {
+    if (_linkItem.isEmpty) {
+      await fetch();
+    }
+    return _linkItem;
   }
 
   HexabaseItem setFieldValue(String key, dynamic value) {
