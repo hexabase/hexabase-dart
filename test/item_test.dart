@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:path/path.dart';
 import 'package:hexabase/src/file.dart';
 import 'package:mime/mime.dart';
+import 'dart:math';
 
 void main() {
   dynamic loadFile() async {
@@ -28,11 +29,9 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = await client.currentWorkspace.project(id: keys['project']);
-    var datastore = await project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
     var item = await datastore.item();
-    item.set('name', 'スイカ').set('price', 100);
-    await item.save();
-    item.set('price', 110).set('salesDate', DateTime.now());
+    item.set('test_text_unique', generateNonce());
     await item.save();
     await item.delete();
   });
@@ -137,7 +136,7 @@ void main() {
     var datastore = await project.datastore(id: keys['datastore']['main']);
     var item = await datastore.item();
     var field = await datastore.field('test_select');
-    item.set('test_select', field.options().first);
+    item.set('test_select', field.options.first);
     await item.save();
     expect(item.id, isNot(''));
     await item.delete();
@@ -149,7 +148,7 @@ void main() {
     var datastore = await project.datastore(id: keys['datastore']['main']);
     var item = await datastore.item();
     var field = await datastore.field('test_checkbox');
-    var options = field.options();
+    var options = field.options;
     var values = [options[0], options[1]].map((o) => o!.value).toList();
     item.set('test_checkbox', [options[0], options[1]]);
     await item.save();
@@ -162,21 +161,22 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = await client.currentWorkspace.project(id: keys['project']);
-    var datastore = await project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
     var item = await datastore.item();
-    item.set('name', 'スイカ').set('price', 120);
+    item.set('test_text_unique', generateNonce());
     var filePath = './test/test.png';
-    var file = HexabaseFile(params: {
+    var file = await item.file();
+    file.sets({
       'name': basename(filePath),
       'contentType': lookupMimeType(filePath) ?? "application/octet-stream",
+      'data': File(filePath).readAsBytesSync()
     });
-    file.data = File(filePath).readAsBytesSync();
-    item.set('picture', file);
+    item.set('test_file', [file]);
     await item.save();
-    var pictures = item.get('picture') as List<HexabaseFile>;
+    var pictures = item.get<List<HexabaseFile>>('test_file');
     var data = await pictures[0].download();
     expect(listEquals(data, file.data), isTrue);
-    item.set('price', 110).set('salesDate', DateTime.now());
+    item.set('test_number', 110).set('test_datetime', DateTime.now());
     await item.save();
     await pictures[0].delete();
     await item.delete();
@@ -185,26 +185,27 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = await client.currentWorkspace.project(id: keys['project']);
-    var datastore = await project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
     var item = await datastore.item();
-    item.set('name', 'スイカ').set('price', 120);
+    item.set('test_text_unique', generateNonce()).set('test_number', 120);
     var filePaths = ['./test/test.png', './test/test2.png'];
     for (var filePath in filePaths) {
-      var file = HexabaseFile(params: {
+      var file = await item.file();
+      file.sets({
         'name': basename(filePath),
-        'contentType': lookupMimeType(filePath) ?? "application/octet-stream"
+        'contentType': lookupMimeType(filePath) ?? "application/octet-stream",
+        'data': File(filePath).readAsBytesSync()
       });
-      file.data = File(filePath).readAsBytesSync();
-      item.add('picture', file);
+      item.add('test_file', file);
     }
     await item.save();
-    var pictures = item.get('picture') as List<dynamic>;
+    var pictures = item.get<List<HexabaseFile>>('test_file');
     expect(pictures.length == 2, true);
-    var picture = pictures[0] as HexabaseFile;
+    var picture = pictures.first;
     expect(picture.name == 'test.png', true);
     var data = await picture.download();
     expect(listEquals(data, File(filePaths[0]).readAsBytesSync()), true);
-    item.set('price', 110).set('salesDate', DateTime.now());
+    item.set('test_number', 110).set('test_datetime', DateTime.now());
     await item.save();
     await item.delete();
   });
@@ -268,4 +269,14 @@ void main() {
     });
     await new Future.delayed(new Duration(seconds: 360));
   }, timeout: Timeout(Duration(minutes: 2)));
+}
+
+String generateNonce([int length = 32]) {
+  const charset =
+      '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+  final random = Random.secure();
+  final randomStr =
+      List.generate(length, (_) => charset[random.nextInt(charset.length)])
+          .join();
+  return randomStr;
 }

@@ -142,19 +142,14 @@ class HexabaseItem extends HexabaseBase {
   }
 
   HexabaseItem add(String name, dynamic value) {
+    var field = datastore!.fieldSync(name);
+    if (!field.supportArray()) {
+      throw Exception('Field $name does not support array');
+    }
     if (!_fields.containsKey(name)) {
-      _fields[name] = [_transValue(name, value)];
-      return this;
+      _fields[name] = [];
     }
-    final val = _fields[name];
-    if (val is List) {
-      val.add(_transValue(name, value));
-      _fields[name] = val;
-    } else if (val == null) {
-      _fields[name] = [_transValue(name, value)];
-    } else {
-      _fields[name] = [val, _transValue(name, value)];
-    }
+    (_fields[name] as List).add(value);
     return this;
   }
 
@@ -175,17 +170,7 @@ class HexabaseItem extends HexabaseBase {
     return this;
   }
 
-  dynamic _transValue(String name, dynamic value) {
-    if (value is HexabaseFile) {
-      value.fieldId = name;
-      value.item = this;
-      return value;
-    }
-    return value;
-  }
-
   HexabaseItem set(String key, dynamic value) {
-    value = _transValue(key, value);
     if (value == null) return this;
     switch (key) {
       case 'datastore':
@@ -284,7 +269,7 @@ class HexabaseItem extends HexabaseBase {
 
   HexabaseItem setFieldValue(String key, dynamic value) {
     var field = datastore!.fieldSync(key);
-    if (field.dataType == HexabaseFieldType.status) {
+    if (field.dataType.name == 'status') {
       status = value;
     } else {
       _fields[key] = field.convert(value, this);
@@ -511,14 +496,21 @@ class HexabaseItem extends HexabaseBase {
     return true;
   }
 
+  Future<HexabaseFile> file() async {
+    if (!isNew() && _fields.isEmpty) {
+      await fetch();
+    }
+    return HexabaseFile(params: {'item': this});
+  }
+
   Future<Map<String, dynamic>> toJson() async {
     var json = <String, dynamic>{};
     json["item"] = {};
-    _fields.forEach((key, value) async {
-      var field = datastore!.fieldSync(key);
-      if (!field.savable()) return;
-      json["item"][key] = field.jsonValue(value);
-    });
+    for (var entry in _fields.entries) {
+      var field = datastore!.fieldSync(entry.key);
+      if (!field.savable()) continue;
+      json["item"][entry.key] = await field.jsonValue(entry.value);
+    }
     if (revNo > 0) {
       json['rev_no'] = revNo;
     }

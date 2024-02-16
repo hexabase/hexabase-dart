@@ -7,10 +7,9 @@ import 'package:hexabase/src/graphql.dart';
 // import "package:http/browser_client.dart";
 
 class HexabaseFile extends HexabaseBase {
-  late String? id;
+  String id = '';
   late String? name;
   late Uint8List data;
-  late String? fieldId;
   late HexabaseItem? item;
   late String contentType = "application/octet-stream";
   late DateTime? createdAt;
@@ -37,7 +36,7 @@ class HexabaseFile extends HexabaseBase {
   }
 
   Future<bool> save() {
-    if (id == null) {
+    if (id == '') {
       return create();
     } else {
       return update();
@@ -47,6 +46,9 @@ class HexabaseFile extends HexabaseBase {
   HexabaseFile set(String key, dynamic value) {
     if (value == null) return this;
     switch (key) {
+      case 'item':
+        item = value as HexabaseItem;
+        break;
       case 'name':
       case 'filename':
         name = value as String;
@@ -72,9 +74,6 @@ class HexabaseFile extends HexabaseBase {
       case '_id':
       case 'file_id':
         id = value as String;
-        break;
-      case 'item':
-        item = value as HexabaseItem;
         break;
       case 'deleted':
         deleted = value as bool;
@@ -138,7 +137,7 @@ class HexabaseFile extends HexabaseBase {
     */
     var response = await HexabaseBase.mutation(
         GRAPHQL_DATASTORE_DELETEITEM_FILE_ATTACHMENT_ITEM,
-        variables: {'itemId': item!.id, 'fieldId': fieldId, 'fileId': id});
+        variables: {'itemId': item!.id, 'fieldId': field!.id, 'fileId': id});
     if (response.data == null) {
       return false;
     }
@@ -146,8 +145,8 @@ class HexabaseFile extends HexabaseBase {
         as Map<String, dynamic>;
     var bol = data['success'] as bool;
     if (bol) {
-      item!.remove(fieldId!, this);
-      item!.remove(fieldId!, id);
+      item!.remove(field!.id!, this);
+      item!.remove(field!.id!, id);
       await item!.save();
     }
     return bol;
@@ -160,9 +159,10 @@ class HexabaseFile extends HexabaseBase {
       'filename': name!,
       'contentTypeFile': contentType,
       'content': base64.encode(data),
-      'field_id': fieldId!,
-      'item_id': item!.id!,
-      'filepath': "${project.id}/${datastore.id}/${item!.id}/$fieldId/$name",
+      'field_id': field!.id!,
+      'item_id': item!.id,
+      'filepath':
+          "${project.id}/${datastore.id}/${item!.id}/${field!.id}/$name",
       'd_id': datastore.id,
       'p_id': project.id,
       'display_order': displayOrder,
