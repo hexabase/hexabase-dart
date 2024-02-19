@@ -170,6 +170,94 @@ const String GRAPHQL_DATASTORE_GET_DATASTORE_ITEMS = r'''
   }
 ''';
 
+const String GRAPHQL_POST_NEW_ITEM_HISTORY = r'''
+  mutation PostNewItemHistory($payload: CreateCommentItemsParameters!) {
+    postNewItemHistory(payload: $payload) {
+      history_id
+      item_history {
+        IsChanged
+        UserObjID
+        action_id
+        comment
+        created_at
+        datastore_id
+        datastore_name
+        display_order
+        email
+        history_id
+        i_id
+        is_fetchreplymail
+        is_notify
+        item_id
+        media_link
+        post_for_rel
+        post_mode
+        project_id
+        transaction_id
+        updated_at
+        user_id
+        username
+        workspace_id
+      }
+    }
+  }
+''';
+
+const String GRAPHQL_POST_UPDATE_ITEM_HISTORY = r'''
+  mutation PostUpdateItemHistory($payload: UpdateCommentItemsParameters!) {
+    postUpdateItemHistory(payload: $payload) {
+      error
+    }
+  }
+''';
+
+const String GRAPHQL_POST_DELETE_ITEM_HISTORY = r'''
+  mutation ArchiveItemHistory($payload: ArchiveCommentItemsParameters!) {
+    archiveItemHistory(payload: $payload) {
+      error
+    }
+  }
+''';
+
+const String GRAPHQL_ITEM_HISTORIES = r'''
+  query GetHistories(
+    $itemId: String!
+    $datastoreId: String!
+    $projectId: String!
+    $getHistoryParamQueries: GetHistoryParamQueries
+  ) {
+    getHistories(
+      itemId: $itemId
+      datastoreId: $datastoreId
+      projectId: $projectId
+      getHistoryParamQueries: $getHistoryParamQueries
+    ) {
+      unread
+      histories {
+        history_id
+        display_order
+        comment
+        is_unread
+        created_at
+        action_id
+        action_name
+        transaction_id
+        action_operation
+        is_status_action
+        datastore_id
+        datastore_name
+        user_id
+        username
+        email
+        updated_by
+        updated_at
+        media_link
+        is_updated
+      }
+    }
+  }
+''';
+
 const String GRAPHQL_GET_APPLICATION_PROJECT_ID_SETTING = r'''
   query getApplicationProjectIdSetting ($applicationId: String!) {
     getApplicationProjectIdSetting(applicationId: $applicationId) {

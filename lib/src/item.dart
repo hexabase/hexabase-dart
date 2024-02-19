@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/graphql.dart';
+import 'package:hexabase/src/history.dart';
 import 'package:hexabase/src/items_parameter.dart';
 import 'package:tuple/tuple.dart';
-import 'package:eventsource/eventsource.dart';
 import 'package:hexabase/src/field.dart';
 
 class HexabaseItem extends HexabaseBase {
@@ -319,6 +319,15 @@ class HexabaseItem extends HexabaseBase {
     return null;
   }
 
+  HexabaseHistory history() {
+    return HexabaseHistory(
+        params: {'item': this, 'user': HexabaseBase.client.currentUser!});
+  }
+
+  Future<List<HexabaseHistory>> histories() {
+    return HexabaseHistory.all(this);
+  }
+
   String getAsString(String field, {String? defaultValue}) {
     if ((!_fields.containsKey(field) || _fields[field] == null) &&
         defaultValue != null) {
@@ -556,8 +565,8 @@ class HexabaseItem extends HexabaseBase {
     return json;
   }
 
-  void subscribe(Function(Event) f) async {
-    final channel = "datastore_${HexabaseBase.client.currentUser!.id}_$id";
+  void subscribe(Function(dynamic) f) async {
+    final channel = "item_view_${id}_${HexabaseBase.client.currentUser!.id}";
     print(channel);
     HexabaseBase.subscribe(channel, (p0) => print(p0));
   }

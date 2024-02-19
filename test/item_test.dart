@@ -280,15 +280,14 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = await client.currentWorkspace.project(id: keys['project']);
-    var datastore = await project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
     var items = await datastore.items();
     var item = items.first;
-    await item.set('name', 'スイカ2').set('price', 120).save(comment: "更新しました");
-    print(item.title);
-    print(item.id);
     item.subscribe((event) {
-      print(event);
+      print("event -> $event");
     });
+    item.set('test_number', 110).set('test_datetime', DateTime.now());
+    await item.save();
     await new Future.delayed(new Duration(seconds: 360));
   }, timeout: Timeout(Duration(minutes: 2)));
 }
