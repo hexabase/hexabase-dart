@@ -2,12 +2,13 @@ import 'dart:async';
 import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/graphql.dart';
+import 'package:hexabase/src/history.dart';
 import 'package:hexabase/src/items_parameter.dart';
 import 'package:tuple/tuple.dart';
-import 'package:eventsource/eventsource.dart';
+import 'package:hexabase/src/field.dart';
 
 class HexabaseItem extends HexabaseBase {
-  late String? id;
+  late String id = '';
   late String? status;
   late String? statusId;
   late String? title;
@@ -15,12 +16,14 @@ class HexabaseItem extends HexabaseBase {
   late DateTime? updatedAt;
   late String? createdBy;
   late String? updatedBy;
-  late HexabaseProject? project;
   late HexabaseDatastore? datastore;
   Map<String, dynamic> _uploadFile = {};
 
   int revNo = 0;
   late int? unread;
+  late int? relatedKey;
+  late String? seedId;
+
   // For update
   late String? actionId;
   bool ensureTransaction = false;
@@ -37,38 +40,41 @@ class HexabaseItem extends HexabaseBase {
   // groupsToPublish
   // accessKeyUpdates
   final Map<String, dynamic> _fields = {};
-  final Map<String, String> _fieldTypes = {};
-  final List<HexabaseItemAction> _statuses = [];
+  late List<HexabaseItemAction> _statuses = [];
   late String _action = "";
-  final List<HexabaseItemAction> _actions = [];
+  late List<HexabaseItemAction> _actions = [];
+  late List<String> statusOrder = [];
+  late List<HexabaseItem> _linkItem = [];
 
   // private
   var _updateStatus = false;
-  HexabaseItem({this.id, this.datastore, this.project}): super() {
-    updatedAt = null;
+  HexabaseItem({Map<String, dynamic>? params}) : super() {
+    if (params != null) sets(params);
   }
 
   static Future<Tuple2<int, List<HexabaseItem>>> all(
-      HexabaseDatastore datastore,
-      HexabaseItemsParameters params,
-      HexabaseProject? project) async {
+      HexabaseDatastore datastore, HexabaseItemsParameters params) async {
     var variables = {
       'datastoreId': datastore.id,
-      'getItemsParameters': await params.toJson()
+      'getItemsParameters': await params.toJson(),
     };
-    if (project != null) {
-      variables['projectId'] = project.id;
+
+    if (datastore.project != null) {
+      variables['projectId'] = datastore.project!.id;
     }
+    await datastore.project!.datastores(refresh: true);
     final response = await HexabaseBase.mutation(
         GRAPHQL_DATASTORE_GET_DATASTORE_ITEMS,
         variables: variables);
-    // print(response);
     var ary =
         response.data!['datastoreGetDatastoreItems']['items'] as List<dynamic>;
     var items = ary.map((data) {
       data = data as Map<String, dynamic>;
-      var item = HexabaseItem(datastore: datastore, project: project);
-      data.forEach((key, value) => item.set(key, value));
+      data.addAll({'datastore': datastore});
+      var item = HexabaseItem(params: data);
+      if (data.containsKey('lookup_items')) {
+        item.set('lookup_items', data['lookup_items']);
+      }
       return item;
     }).toList();
     return Tuple2(
@@ -117,9 +123,8 @@ class HexabaseItem extends HexabaseBase {
         as List<dynamic>;
     var items = ary.map((data) {
       data = data as Map<String, dynamic>;
-      var item = HexabaseItem(datastore: datastore, project: project);
-      data.forEach((key, value) => item.set(key, value));
-      return item;
+      data.addAll({'datastore': datastore});
+      return HexabaseItem(params: data);
     }).toList();
     return Tuple2(
         response.data!['datastoresGlobalSearch']['item_list']['totalItems']
@@ -127,8 +132,11 @@ class HexabaseItem extends HexabaseBase {
         items);
   }
 
-  HexabaseItem sets(Map<String, dynamic> fields) {
-    fields.forEach((key, value) => set(key, value));
+  HexabaseItem sets(Map<String, dynamic> params) {
+    if (params.containsKey("datastore")) {
+      datastore = params['datastore'] as HexabaseDatastore;
+    }
+    params.forEach((key, value) => set(key, value));
     return this;
   }
 
@@ -139,19 +147,14 @@ class HexabaseItem extends HexabaseBase {
   }
 
   HexabaseItem add(String name, dynamic value) {
+    var field = datastore!.fieldSync(name);
+    if (!field.supportArray()) {
+      throw Exception('Field $name does not support array');
+    }
     if (!_fields.containsKey(name)) {
-      _fields[name] = [_transValue(name, value)];
-      return this;
+      _fields[name] = [];
     }
-    final val = _fields[name];
-    if (val is List) {
-      val.add(_transValue(name, value));
-      _fields[name] = val;
-    } else if (val == null) {
-      _fields[name] = [_transValue(name, value)];
-    } else {
-      _fields[name] = [val, _transValue(name, value)];
-    }
+    (_fields[name] as List).add(value);
     return this;
   }
 
@@ -172,19 +175,15 @@ class HexabaseItem extends HexabaseBase {
     return this;
   }
 
-  dynamic _transValue(String name, dynamic value) {
-    if (value is HexabaseFile) {
-      value.fieldId = name;
-      value.item = this;
-      return value;
-    }
-    return value;
-  }
-
-  HexabaseItem set(String name, dynamic value) {
-    value = _transValue(name, value);
+  HexabaseItem set(String key, dynamic value) {
     if (value == null) return this;
-    switch (name.toLowerCase()) {
+    switch (key) {
+      case 'datastore':
+        datastore = value as HexabaseDatastore;
+        break;
+      case 'Status':
+        status = value as String;
+        break;
       case 'status_id':
         statusId = value as String?;
         break;
@@ -200,14 +199,16 @@ class HexabaseItem extends HexabaseBase {
       case 'updated_by':
         updatedBy = value as String;
         break;
-      case 'd_id':
-        datastore = HexabaseDatastore(id: value as String);
-        break;
       case 'i_id':
         id = value as String;
         break;
-      case 'p_id':
-        project = HexabaseProject(id: value as String);
+      case 'related_key':
+        if (value != '') {
+          relatedKey = int.parse(value);
+        }
+        break;
+      case 'seed_i_id':
+        seedId = value as String;
         break;
       case 'rev_no':
         if (value is int) {
@@ -217,48 +218,114 @@ class HexabaseItem extends HexabaseBase {
         }
         break;
       case 'title':
+      case 'Title':
         title = value as String;
         break;
       case 'unread':
-        unread = int.parse(value);
+        if (value is int) {
+          unread = value;
+        } else {
+          unread = int.parse(value as String);
+        }
+        break;
+      case 'item_links':
+        var params = value as Map<String, dynamic>;
+        if (params.containsKey('links') && params['links'] != null) {
+          var links = params['links'] as List<dynamic>;
+          for (var link in links) {
+            link = link as Map<String, dynamic>;
+            var d = datastore!.project!.datastoreSync(id: link['d_id']);
+            for (var item in link['items']) {
+              item = item as Map<String, dynamic>;
+              _linkItem.add(d.itemSync(id: link['i_id']));
+            }
+          }
+        }
         break;
       case 'lookup_items':
         var params = value as Map<String, dynamic>;
         params.forEach((key, value) {
-          var item = HexabaseItem();
-          item.sets(value);
-          _fields[key] = item;
+          (value as Map<String, dynamic>).addAll({
+            'datastore': datastore!.project!.datastoreSync(id: value['d_id'])
+          });
+          var item = HexabaseItem(params: value);
+          setFieldValue(key, item);
         });
         break;
-      default:
-        if (value is Map && value.containsKey('file_id')) {
-          var file = HexabaseFile();
-          file.sets(value as Map<String, dynamic>);
-          file.set('item', this);
-          _fields[name] = file;
-        } else if (value is List &&
-            value.isNotEmpty &&
-            value[0] is Map &&
-            value[0].containsKey('file_id')) {
-          var files = value.map((data) {
-            var file = HexabaseFile();
-            file.sets(data as Map<String, dynamic>);
-            file.set('item', this);
-            return file;
-          }).toList();
-          _fields[name] = files;
-        } else {
-          _fields[name] = value;
+      case 'item_actions':
+        var params = value as Map<String, dynamic>;
+        _actions = params.keys.map((key) {
+          var data = params[key] as Map<String, dynamic>;
+          data.addAll({'item': this});
+          return HexabaseItemAction(params: data);
+        }).toList();
+        break;
+      case 'status_actions':
+        var params = value as Map<String, dynamic>;
+        _statuses = params.keys.map((key) {
+          var data = params[key] as Map<String, dynamic>;
+          data.addAll({'item': this});
+          return HexabaseItemAction(params: data);
+        }).toList();
+        break;
+      case 'status_order':
+        var params = value as List<dynamic>;
+        statusOrder = params.map((e) => e as String).toList();
+        break;
+      case 'field_values':
+        var params = value as Map<String, dynamic>;
+        for (var key in params.keys) {
+          setFieldValue(key, params[key]['value']);
         }
+        break;
+      case '__typename':
+      case 'd_id':
+      case 'p_id':
+      case 'w_id':
+      case 'status_list':
+      case 'status_action_order':
+      case 'item_action_order':
+        break;
+      default:
+        setFieldValue(key, value);
     }
     return this;
   }
 
-  dynamic get(String field) {
+  Future<List<HexabaseItem>> get linkItems async {
+    if (_linkItem.isEmpty) {
+      await fetch();
+    }
+    return _linkItem;
+  }
+
+  HexabaseItem setFieldValue(String key, dynamic value) {
+    var field = datastore!.fieldSync(key);
+    if (field.dataType.name == 'status') {
+      status = value;
+    } else {
+      _fields[key] = field.convert(value, this);
+    }
+    return this;
+  }
+
+  dynamic get<T>(String field) {
+    if (field == 'title') {
+      return title;
+    }
     if (_fields.containsKey(field)) {
-      return _fields[field];
+      return _fields[field] as T;
     }
     return null;
+  }
+
+  HexabaseHistory history() {
+    return HexabaseHistory(
+        params: {'item': this, 'user': HexabaseBase.client.currentUser!});
+  }
+
+  Future<List<HexabaseHistory>> histories() {
+    return HexabaseHistory.all(this);
   }
 
   String getAsString(String field, {String? defaultValue}) {
@@ -311,8 +378,12 @@ class HexabaseItem extends HexabaseBase {
     return HexabaseItem();
   }
 
+  bool isNew() {
+    return id == '';
+  }
+
   Future<bool> save({String? comment = ""}) {
-    if (id == null) {
+    if (id == '') {
       return create();
     } else {
       return update(comment: comment);
@@ -323,12 +394,12 @@ class HexabaseItem extends HexabaseBase {
     var response = await HexabaseBase.mutation(
         GRAPHQL_DATASTORE_CREATE_NEW_ITEM,
         variables: {
-          'projectId': project!.id,
+          'projectId': datastore!.project!.id,
           'datastoreId': datastore!.id,
           'newItemActionParameters': await toJson()
         });
     id = response.data!['datastoreCreateNewItem']['item_id'] as String;
-    await getDetail();
+    await fetch();
     await uploadFile();
     return true;
   }
@@ -368,10 +439,10 @@ class HexabaseItem extends HexabaseBase {
     return true;
   }
 
-  Future<bool> getDetail() async {
+  Future<bool> fetch() async {
     var response = await HexabaseBase.query(GRAPHQL_GET_DATASTORE_ITEM_DETAILS,
         variables: {
-          'projectId': project!.id,
+          'projectId': datastore!.project!.id,
           'datastoreId': datastore!.id,
           'itemId': id,
           'datastoreItemDetailParams': {
@@ -381,44 +452,24 @@ class HexabaseItem extends HexabaseBase {
         });
     var data =
         response.data!['getDatastoreItemDetails'] as Map<String, dynamic>;
-    set('title', data['title']).set('rev_no', data['rev_no']);
-    // _setStatusList(data['status_list'] as Map<String, dynamic>);
-    // set actions
-    _setStatusActions(data['status_actions'] as Map<String, dynamic>);
-    var params = data['field_values'] as Map<String, dynamic>;
-    params.forEach((key, value) {
-      value = value as Map<String, dynamic>;
-      if (value['dataType'] == 'status') {
-        status = value['value'];
-      } else {
-        set(key, value['value']);
-      }
-      _fieldTypes[key] = value['dataType'] as String;
-    });
+    await datastore?.project?.datastores();
+    sets(data);
     return true;
   }
 
-  void _setStatusActions(Map<String, dynamic> statusActions) {
-    _actions.clear();
-    statusActions.forEach((key, value) {
-      _actions.add(HexabaseItemAction(
-        id: value["a_id"],
-        idLabel: value["status_id"],
-        name: key,
-        nameLabel: value["action_name"],
-        description: value["description"],
-        displayOrder: value["display_order"],
-        crudType: int.parse(value["crud_type"]),
-        nextStatusId: value["next_status_id"],
-      ));
-    });
-  }
-
-  List<HexabaseItemAction> actions() {
+  Future<List<HexabaseItemAction>> actions() async {
+    if (_actions.isNotEmpty) {
+      return _actions;
+    }
+    await fetch();
     return _actions;
   }
 
-  List<HexabaseItemAction> statues() {
+  Future<List<HexabaseItemAction>> statues() async {
+    if (_statuses.isNotEmpty) {
+      return _statuses;
+    }
+    await fetch();
     return _statuses;
   }
 
@@ -426,11 +477,11 @@ class HexabaseItem extends HexabaseBase {
     if (_updateStatus) {
       return updateStatus();
     }
-    var itemActionParameters =  await toJson();
+    var itemActionParameters = await toJson();
     itemActionParameters['comment'] = comment ?? '';
     final response =
         await HexabaseBase.mutation(GRAPHQL_DATASTORE_UPDATE_ITEM, variables: {
-      'projectId': project!.id,
+      'projectId': datastore!.project!.id,
       'datastoreId': datastore!.id,
       'itemId': id,
       'itemActionParameters': itemActionParameters,
@@ -444,15 +495,12 @@ class HexabaseItem extends HexabaseBase {
   }
 
   Future<bool> updateStatus() async {
-    var action = _actions.firstWhere((a) =>
-        a.name == _action ||
-        a.id == _action ||
-        a.idLabel == _action ||
-        a.nameLabel == _action);
+    var action = _actions.firstWhere(
+        (a) => a.name == _action || a.id == _action || a.actionId == _action);
     var response = await HexabaseBase.mutation(
         GRAPHQL_DATASTORE_EXECUTE_ITEM_ACTION,
         variables: {
-          'projectId': project!.id,
+          'projectId': datastore!.project!.id,
           'datastoreId': datastore!.id,
           'itemId': id,
           'actionId': action.id,
@@ -462,7 +510,7 @@ class HexabaseItem extends HexabaseBase {
     var params = response.data!['datastoreExecuteItemAction']['item']
         as Map<String, dynamic>;
     sets(params);
-    return getDetail();
+    return fetch();
   }
 
   Future<bool> delete(
@@ -481,7 +529,7 @@ class HexabaseItem extends HexabaseBase {
     }
     final response =
         await HexabaseBase.mutation(GRAPHQL_DATASTORE_DELETE_ITEM, variables: {
-      'projectId': project!.id,
+      'projectId': datastore!.project!.id,
       'datastoreId': datastore!.id,
       'itemId': id,
       'deleteItemReq': params
@@ -489,24 +537,21 @@ class HexabaseItem extends HexabaseBase {
     return true;
   }
 
+  Future<HexabaseFile> file() async {
+    if (!isNew() && _fields.isEmpty) {
+      await fetch();
+    }
+    return HexabaseFile(params: {'item': this});
+  }
+
   Future<Map<String, dynamic>> toJson() async {
     var json = <String, dynamic>{};
     json["item"] = {};
-    _fields.forEach((key, value) async {
-      if (value is DateTime) {
-        value = value.toIso8601String();
-      } else if (value is HexabaseFile) {
-        _uploadFile[key] = value;
-      } else if (value is List &&
-          value.isNotEmpty &&
-          value[0] is HexabaseFile) {
-        _uploadFile[key] = value;
-      } else if (value is HexabaseItem) {
-        // ignore
-      } else {
-        json["item"][key] = value;
-      }
-    });
+    for (var entry in _fields.entries) {
+      var field = datastore!.fieldSync(entry.key);
+      if (!field.savable()) continue;
+      json["item"][entry.key] = await field.jsonValue(entry.value);
+    }
     if (revNo > 0) {
       json['rev_no'] = revNo;
     }
@@ -517,12 +562,11 @@ class HexabaseItem extends HexabaseBase {
     json['return_item_result'] = returnItemResult;
     json['return_actionscript_logs'] = returnActionscriptLogs;
     json['disable_linker'] = disableLinker;
-    print(json);
     return json;
   }
 
-  void subscribe(Function(Event) f) async {
-    final channel = "datastore_${HexabaseBase.client.currentUser!.id}_$id";
+  void subscribe(Function(dynamic) f) async {
+    final channel = "item_view_${id}_${HexabaseBase.client.currentUser!.id}";
     print(channel);
     HexabaseBase.subscribe(channel, (p0) => print(p0));
   }

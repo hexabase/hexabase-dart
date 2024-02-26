@@ -7,35 +7,79 @@ import 'package:hexabase/src/role.dart';
 import 'package:collection/collection.dart';
 
 class HexabaseProject extends HexabaseBase {
-  late String? id;
-  late Map<String, String> _name = {};
+  late String id = '';
+  late String? name;
   late DateTime createdAt;
   late DateTime updatedAt;
   String? templateId;
   String? displayId;
+  int? displayOrder;
   String? theme;
   HexabaseWorkspace? workspace;
   List<HexabaseRole?> _roles = [];
 
   late List<HexabaseDatastore> _datastores = [];
 
-  HexabaseProject({this.id, this.workspace}) : super();
-
-  Future<bool> save() async {
-    if (id == null) return create();
-    return update();
+  HexabaseProject({Map<String, dynamic>? params}) : super() {
+    if (params != null) sets(params);
   }
 
-  HexabaseProject name(String language, String name) {
-    if (!['ja', 'en'].contains(language)) {
-      throw Exception('Language must be ja or en');
-    }
-    _name[language] = name;
+  HexabaseProject sets(Map<String, dynamic> params) {
+    params.forEach((key, value) => set(key, value));
     return this;
   }
 
+  HexabaseProject set(String key, dynamic value) {
+    switch (key) {
+      case 'application_id':
+      case 'project_id':
+      case 'id':
+      case 'p_id':
+        id = value as String;
+        break;
+      case 'name':
+      case 'project_name':
+        name = value as String;
+        break;
+      case 'display_id':
+        displayId = value as String;
+        break;
+      case 'created_at':
+        createdAt = value as DateTime;
+        break;
+      case 'updated_at':
+        updatedAt = value as DateTime;
+        break;
+      case 'template_id':
+        templateId = value as String;
+        break;
+      case 'display_order':
+        displayOrder = value as int;
+        break;
+      case 'theme':
+        theme = value as String;
+        break;
+      case "workspace":
+        workspace = value as HexabaseWorkspace;
+        break;
+      case 'w_id':
+      case "__typename":
+      case "datastores":
+        break;
+      default:
+        throw Exception("Invalid field name, $key");
+    }
+    return this;
+  }
+
+  Future<bool> save() async {
+    if (id == '') return create();
+    throw Exception('Project does not support update');
+    // return update();
+  }
+
   Future<bool> create() async {
-    Map<String, dynamic> createProjectParams = {'name': _name};
+    Map<String, dynamic> createProjectParams = {'name': name};
     if (templateId != null) {
       createProjectParams['templateId'] = templateId;
     }
@@ -46,10 +90,11 @@ class HexabaseProject extends HexabaseBase {
     return true;
   }
 
+  /*
   Future<bool> update() async {
     Map<String, dynamic> payload = {
       'project_id': id,
-      'project_name': _name,
+      'project_name': name,
     };
     if (displayId != null) {
       payload['project_displayid'] = displayId;
@@ -64,6 +109,7 @@ class HexabaseProject extends HexabaseBase {
     }
     return false;
   }
+  */
 
   Future<bool> delete() async {
     final response =
@@ -78,28 +124,55 @@ class HexabaseProject extends HexabaseBase {
     return false;
   }
 
+  Future<bool> fetch() async {
+    if (id == '') {
+      throw Exception('Project id is not set');
+    }
+    final response = await HexabaseBase.query(GRAPHQL_GET_PROJECT, variables: {
+      'projectId': id,
+    });
+    if (response.data != null) {
+      sets(response.data!['getInfoProject'] as Map<String, dynamic>);
+      return true;
+    }
+    return false;
+  }
+
+  HexabaseDatastore datastoreSync({String? id}) {
+    if (_datastores.isEmpty) {
+      throw Exception('Datastores are not fetched');
+    }
+    if (id != null) {
+      var datastore = _datastores.firstWhereOrNull(
+        (datastore) => datastore.id == id,
+      );
+      if (datastore == null) throw Exception('Datastore $id is not found');
+      return datastore;
+    }
+    return HexabaseDatastore(params: {'project': this});
+  }
+
   Future<HexabaseDatastore> datastore({String? id}) async {
     if (_datastores.isEmpty) {
       await datastores();
     }
     if (id != null) {
-      var ds = _datastores.firstWhereOrNull(
-        (datastore) => datastore!.id == id,
+      var datastore = _datastores.firstWhereOrNull(
+        (datastore) => datastore.id == id,
       );
-      if (ds == null) throw Exception('Datastore $id is not found');
-      return ds;
+      if (datastore == null) throw Exception('Datastore $id is not found');
+      await datastore.fetch();
+      return datastore;
     }
-    var ds = HexabaseDatastore(project: this);
-    await ds.save();
-    return datastore(id: ds.id);
+    return HexabaseDatastore(params: {'project': this});
   }
 
   Future<List<HexabaseDatastore>> datastores(
-      {List<HexabaseDatastore>? datastores}) async {
+      {List<HexabaseDatastore>? datastores, bool? refresh}) async {
     if (datastores != null) {
       _datastores = datastores;
     }
-    if (_datastores.isEmpty) {
+    if (_datastores.isEmpty || refresh == true) {
       _datastores = await HexabaseDatastore.all(this);
     }
     return _datastores;
@@ -111,24 +184,7 @@ class HexabaseProject extends HexabaseBase {
         variables: {
           'applicationId': id,
         });
-    var project = response.data?['getApplicationProjectIdSetting']
-        as Map<String, dynamic>;
-    this.id = project.containsKey('id') ? project['id'] as String : '';
-    _name = project.containsKey('name')
-        ? {
-            'ja': project['name']['ja'] as String,
-            'en': project['name']['en'] as String,
-          }
-        : {};
-    displayId = project.containsKey('display_id')
-        ? project['display_id'] as String
-        : '';
-    createdAt = project.containsKey('created_at')
-        ? DateTime.parse(project['created_at'] as String)
-        : DateTime.now();
-    updatedAt = project.containsKey('updated_at')
-        ? DateTime.parse(project['updated_at'] as String)
-        : DateTime.now();
+    sets(response.data?['getApplicationProjectIdSetting']);
     return this;
   }
 
@@ -158,22 +214,24 @@ class HexabaseProject extends HexabaseBase {
           'workspaceId': id,
         });
     var ary = response.data!['getApplicationAndDataStore'] as List<dynamic>;
-    return ary.map((data) {
-      var project = HexabaseProject(id: data['project_id']);
-      project._name = {'ja': data['name'], 'en': data['name']};
-      project.displayId = data['display_id'];
+    var projects = ary.map((data) {
+      var project = HexabaseProject(params: data);
+      if (data['datastores'] == null) {
+        project._datastores = [];
+        return project;
+      }
       var datastores = data['datastores'] as List<dynamic>;
       project._datastores = datastores.map((data) {
-        var datastore =
-            HexabaseDatastore(id: data['datastore_id'], project: project);
-        datastore.name('ja', data['name'] as String);
-        datastore.displayId = data['display_id'] as String;
-        datastore.deleted = data['deleted'] as bool;
-        datastore.imported = data['imported'] as bool;
-        datastore.uploading = data['uploading'] as bool;
-        return datastore;
+        (data as Map<String, dynamic>).addAll({'project': project});
+        return HexabaseDatastore(params: data);
       }).toList();
       return project;
     }).toList();
+    for (var project in projects) {
+      for (var datastore in project._datastores) {
+        await datastore.fetch();
+      }
+    }
+    return projects;
   }
 }

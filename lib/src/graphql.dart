@@ -14,6 +14,28 @@ const String GRAPHQL_LOGIN_AUTH0 = r'''
   }
 ''';
 
+const String GRAPHQL_USER_INFO = r'''
+  query UserInfo {
+    userInfo {
+      username
+      email
+      profile_pic
+      u_id
+      current_workspace_id
+      is_ws_admin
+      user_roles {
+        r_id
+        role_name
+        role_id
+        p_id
+        application_id
+        application_name
+        application_display_order
+      }
+    }
+  }
+''';
+
 const String GRAPHQL_WORKSPACES = r'''
   query Workspaces {
     workspaces {
@@ -62,6 +84,19 @@ const String GRAPHQL_DELETE_PROJECT = r'''
     deleteProject(payload: $payload) {
       success
       data
+    }
+  }
+''';
+
+const String GRAPHQL_GET_PROJECT = r'''
+  query Query($projectId: String!) {
+    getInfoProject(projectId: $projectId) {
+      p_id
+      display_order
+      template_id
+      display_id
+      name
+      w_id
     }
   }
 ''';
@@ -135,6 +170,94 @@ const String GRAPHQL_DATASTORE_GET_DATASTORE_ITEMS = r'''
   }
 ''';
 
+const String GRAPHQL_POST_NEW_ITEM_HISTORY = r'''
+  mutation PostNewItemHistory($payload: CreateCommentItemsParameters!) {
+    postNewItemHistory(payload: $payload) {
+      history_id
+      item_history {
+        IsChanged
+        UserObjID
+        action_id
+        comment
+        created_at
+        datastore_id
+        datastore_name
+        display_order
+        email
+        history_id
+        i_id
+        is_fetchreplymail
+        is_notify
+        item_id
+        media_link
+        post_for_rel
+        post_mode
+        project_id
+        transaction_id
+        updated_at
+        user_id
+        username
+        workspace_id
+      }
+    }
+  }
+''';
+
+const String GRAPHQL_POST_UPDATE_ITEM_HISTORY = r'''
+  mutation PostUpdateItemHistory($payload: UpdateCommentItemsParameters!) {
+    postUpdateItemHistory(payload: $payload) {
+      error
+    }
+  }
+''';
+
+const String GRAPHQL_POST_DELETE_ITEM_HISTORY = r'''
+  mutation ArchiveItemHistory($payload: ArchiveCommentItemsParameters!) {
+    archiveItemHistory(payload: $payload) {
+      error
+    }
+  }
+''';
+
+const String GRAPHQL_ITEM_HISTORIES = r'''
+  query GetHistories(
+    $itemId: String!
+    $datastoreId: String!
+    $projectId: String!
+    $getHistoryParamQueries: GetHistoryParamQueries
+  ) {
+    getHistories(
+      itemId: $itemId
+      datastoreId: $datastoreId
+      projectId: $projectId
+      getHistoryParamQueries: $getHistoryParamQueries
+    ) {
+      unread
+      histories {
+        history_id
+        display_order
+        comment
+        is_unread
+        created_at
+        action_id
+        action_name
+        transaction_id
+        action_operation
+        is_status_action
+        datastore_id
+        datastore_name
+        user_id
+        username
+        email
+        updated_by
+        updated_at
+        media_link
+        is_updated
+      }
+    }
+  }
+''';
+
 const String GRAPHQL_GET_APPLICATION_PROJECT_ID_SETTING = r'''
   query getApplicationProjectIdSetting ($applicationId: String!) {
     getApplicationProjectIdSetting(applicationId: $applicationId) {
@@ -174,6 +297,56 @@ const String GRAPHQL_DATASTORE_CREATE_NEW_ITEM = r'''
       history_id
       item
       item_id
+    }
+  }
+''';
+
+const String GRAPHQL_GET_DATASTORE = r'''
+  query DatastoreSetting($datastoreId: String!) {
+    datastoreSetting(datastoreId: $datastoreId) {
+      display_id
+      names
+      id
+      field_layout {
+        display_id
+        col
+        id
+        row
+        size_x
+        size_y
+      }
+      fields {
+        as_title
+        data_type
+        display_id
+        display_name
+        field_index
+        full_text
+        id
+        max_value
+        min_value
+        names
+        options {
+          o_id
+          _key
+          fieldID
+        }
+        show_list
+        search
+        status
+        title_order
+        unique
+      }
+      roles {
+        name
+        id
+        display_id
+      }
+      statuses {
+        names
+        display_id
+        id
+      }
     }
   }
 ''';

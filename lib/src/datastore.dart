@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:collection/collection.dart';
 import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/field_result.dart';
@@ -7,6 +8,8 @@ import 'package:hexabase/src/items_parameter.dart';
 // import 'package:hexabase/src/search_condition.dart';
 import 'package:hexabase/src/graphql.dart';
 // import 'package:hexabase/src/field.dart';
+import 'package:hexabase/src/role.dart';
+import 'package:hexabase/src/status.dart';
 
 class HBDataStoreResponseWithCount {
   final int count;
@@ -21,7 +24,7 @@ enum HBSearchType {
 }
 
 class HexabaseDatastore extends HexabaseBase {
-  late String? id;
+  String id = '';
   late Map<String, String>? _name = {};
   late HexabaseProject? project;
   late String? displayId;
@@ -46,34 +49,168 @@ class HexabaseDatastore extends HexabaseBase {
 
   late bool noStatus;
   late int displayOrder;
-  late double unread;
+  late int unread;
   late bool invisible;
   late bool isExternalService;
   late String dataSource;
   late Map<dynamic, dynamic> externalServiceData;
 
   List<HexabaseField>? _fields;
+  List<HexabaseRole>? _roles;
+  List<HexabaseStatus>? _statuses;
 
-  HexabaseDatastore({this.id, this.project}) : super();
+  HexabaseDatastore({Map<String, dynamic>? params}) : super() {
+    if (params != null) sets(params);
+  }
 
-  HexabaseDatastore name(String language, String name) {
-    if (!['ja', 'en'].contains(language)) {
-      throw Exception('Language must be ja or en');
-    }
-    _name ??= {};
-    _name![language] = name;
+  HexabaseDatastore sets(Map<String, dynamic> params) {
+    params.forEach((key, value) => set(key, value));
     return this;
   }
 
+  HexabaseDatastore set(String key, dynamic value) {
+    switch (key) {
+      case 'id':
+      case 'd_id':
+      case 'datastore_id':
+        id = value as String;
+        break;
+      case 'project':
+        project = value as HexabaseProject;
+        break;
+      case 'display_id':
+        displayId = value as String;
+        break;
+      case 'uploading':
+        uploading = value as bool;
+        break;
+      case 'imported':
+        imported = value as bool;
+        break;
+      case 'no_status':
+        noStatus = value as bool;
+        break;
+      case 'show_in_menu':
+        showInMenu = value as bool;
+        break;
+      case 'deleted':
+        deleted = value as bool;
+        break;
+      case 'extend_limit_textarea_length':
+        extendLimitTextareaLength = value as int;
+        break;
+      case 'ignore_save_template':
+        ignoreSaveTemplate = value as bool;
+        break;
+      case 'show_display_id_to_list':
+        showDisplayIdToList = value as bool;
+        break;
+      case 'show_info_to_list':
+        showInfoToList = value as bool;
+        break;
+      case 'show_only_dev_mode':
+        showOnlyDevMode = value as bool;
+        break;
+      case 'use_board_view':
+        useBoardView = value as bool;
+        break;
+      case 'use_csv_update':
+        useCsvUpdate = value as bool;
+        break;
+      case 'use_external_sync':
+        useExternalSync = value as bool;
+        break;
+      case 'use_grid_view':
+        useGridView = value as bool;
+        break;
+      case 'use_grid_view_by_default':
+        useGridViewByDefault = value as bool;
+        break;
+      case 'use_qr_download':
+        useQrDownload = value as bool;
+        break;
+      case 'use_replace_upload':
+        useReplaceUpload = value as bool;
+        break;
+      case 'use_status_update':
+        useStatusUpdate = value as bool;
+        break;
+      case 'display_order':
+        displayOrder = value as int;
+        break;
+      case 'unread':
+        unread = value as int;
+        break;
+      case 'invisible':
+        invisible = value as bool;
+        break;
+      case 'is_external_service':
+        isExternalService = value as bool;
+        break;
+      case 'data_source':
+        dataSource = value as String;
+        break;
+      case 'external_service_data':
+        if (value != null) {
+          externalServiceData = value as Map;
+        }
+        break;
+      case 'names':
+      case 'name':
+        if (value is String) {
+          _name = {'ja': value, 'en': value};
+        } else {
+          for (var entry in (value as Map<String, dynamic>).entries) {
+            _name![entry.key] = entry.value as String;
+          }
+        }
+        break;
+      case 'fields':
+        _fields = (value as List<dynamic>).map((e) {
+          (e as Map<String, dynamic>).addAll({'datastore': this});
+          return HexabaseField(params: e);
+        }).toList();
+        break;
+      case 'roles':
+        _roles = (value as List<dynamic>).map((e) {
+          (e as Map<String, dynamic>)
+              .addAll({'project': project, 'datastore': this});
+          return HexabaseRole(params: e);
+        }).toList();
+        break;
+      case 'statuses':
+        _statuses = (value as List<dynamic>).map((e) {
+          (e as Map<String, dynamic>).addAll({'datastore': this});
+          return HexabaseStatus(params: e);
+        }).toList();
+        break;
+      case '__typename':
+      case 'p_id':
+      case 'w_id':
+      case 'ws_name':
+      case 'field_layout':
+        break;
+      default:
+        throw Exception('Invalid field name in datastore($id), $key');
+    }
+    return this;
+  }
+
+  String name(String language) {
+    if (!['ja', 'en'].contains(language)) {
+      throw Exception('Language must be ja or en');
+    }
+    return _name![language]!;
+  }
+
   Future<HexabaseDatastore> save({templateName = 'SEED1', lang = 'ja'}) async {
-    if (id == null) {
+    if (id == '') {
       await create(templateName, lang);
-      await HexabaseDatastore.all(project!);
-      return await project!.datastore(id: id);
     } else {
       await update();
     }
-    return this;
+    await HexabaseDatastore.all(project!);
+    return await project!.datastore(id: id);
   }
 
   static Future<List<HexabaseDatastore>> all(HexabaseProject project) async {
@@ -82,48 +219,35 @@ class HexabaseDatastore extends HexabaseBase {
     var ary = response.data!['datastores'] as List<dynamic>;
     var datastores =
         ary.map((e) => HexabaseDatastore.fromJson(project, e)).toList();
+    await Future.wait(datastores.map((d) => d.fields()));
     project.datastores(datastores: datastores);
     return datastores;
   }
 
+  Future<bool> fetch() async {
+    if (id == '') {
+      throw Exception('Datastore id is not set');
+    }
+    final response =
+        await HexabaseBase.query(GRAPHQL_GET_DATASTORE, variables: {
+      'datastoreId': id,
+    });
+    if (response.data != null && response.data!['datastoreSetting'] != null) {
+      sets(response.data!['datastoreSetting'] as Map<String, dynamic>);
+      await fields(refresh: true);
+      return true;
+    }
+    throw Exception('Datastore $id is not found');
+  }
+
   static HexabaseDatastore fromJson(
       HexabaseProject project, Map<String, dynamic> json) {
-    final datastore =
-        HexabaseDatastore(id: json['d_id'] as String, project: project);
-    datastore.displayId = json['display_id'] as String;
-    datastore.deleted = json['deleted'] as bool;
-    datastore.imported = json['imported'] as bool;
-    datastore.uploading = json['uploading'] as bool;
-    //ws_name: String
-    datastore
-        .name('ja', json['name'] as String)
-        .name('en', json['name'] as String);
-    datastore.useBoardView = json['use_board_view'] as bool;
-    datastore.useGridView = json['use_grid_view'] as bool;
-    datastore.useGridViewByDefault = json['use_grid_view_by_default'] as bool;
-    datastore.showInMenu = json['show_in_menu'] as bool;
-    datastore.useCsvUpdate = json['use_csv_update'] as bool;
-    datastore.useQrDownload = json['use_qr_download'] as bool;
-    datastore.useReplaceUpload = json['use_replace_upload'] as bool;
-    datastore.useExternalSync = json['use_external_sync'] as bool;
-    datastore.showOnlyDevMode = json['show_only_dev_mode'] as bool;
-    datastore.showDisplayIdToList = json['show_display_id_to_list'] as bool;
-    datastore.showInfoToList = json['show_info_to_list'] as bool;
-    datastore.noStatus = json['no_status'] as bool;
-    datastore.displayOrder = json['display_order'] as int;
-    int unread = json['unread'] as int;
-    datastore.unread = unread.toDouble();
-    datastore.invisible = json['invisible'] as bool;
-    datastore.isExternalService = json['is_external_service'] as bool;
-    datastore.dataSource = json['data_source'] as String;
-    if (json['external_service_data'] != null) {
-      datastore.externalServiceData = json['external_service_data'] as Map;
-    }
-    return datastore;
+    json['project'] = project;
+    return HexabaseDatastore(params: json);
   }
 
   Future<HexabaseDatastore> create(String templateName, String lang) async {
-    var user = await HexabaseUser.getCurrentUser();
+    var user = await HexabaseUser.current();
     if (project == null) throw Exception('Project is required');
     if (project!.workspace == null) throw Exception('Workspace is required');
     var response = await HexabaseBase.mutation(
@@ -178,18 +302,27 @@ class HexabaseDatastore extends HexabaseBase {
 
   Future<List<HexabaseItem>> items({HexabaseItemsParameters? query}) async {
     query = _getParams(query);
-    var res = await HexabaseItem.all(this, query, project!);
+    var res = await HexabaseItem.all(this, query);
     return res.item2;
   }
 
-  HexabaseItem item() {
-    return HexabaseItem(datastore: this, project: project);
+  Future<HexabaseItem> item({String? id}) async {
+    if (id == null) return HexabaseItem(params: {'datastore': this});
+    var item = HexabaseItem(params: {'i_id': id, 'datastore': this});
+    await item.fetch();
+    return item;
+  }
+
+  HexabaseItem itemSync({String? id}) {
+    if (id == null) return HexabaseItem(params: {'datastore': this});
+    var item = HexabaseItem(params: {'i_id': id, 'datastore': this});
+    return item;
   }
 
   Future<HBDataStoreResponseWithCount> itemsWithCount(
       {HexabaseItemsParameters? query}) async {
     query = _getParams(query);
-    var res = await HexabaseItem.all(this, query, project);
+    var res = await HexabaseItem.all(this, query);
     return HBDataStoreResponseWithCount(res.item1, res.item2);
   }
 
@@ -225,25 +358,32 @@ class HexabaseDatastore extends HexabaseBase {
     return params;
   }
 
-  Future<List<HexabaseField>> fields() async {
+  HexabaseField fieldSync(String name) {
+    if (_fields == null) throw Exception('Fields are not fetched');
+    var field = _fields!.firstWhereOrNull((field) =>
+        field.name('ja') == name ||
+        field.name('en') == name ||
+        field.displayId == name ||
+        field.id == name);
+    if (field == null) {
+      throw Exception("Field $name is not found in datastore ($id)");
+    }
+    return field;
+  }
+
+  Future<List<HexabaseField>> fields({bool? refresh}) async {
+    if (refresh == true) _fields = null;
     if (_fields != null) return _fields!;
     if (project == null) throw Exception('Project is required');
-    var response =
-        await HexabaseBase.mutation(GRAPHQL_DATASTORE_GET_FIELDS, variables: {
-      'projectId': project!.id,
-      'datastoreId': displayId,
-    });
-    var fields =
-        response.data!['datastoreGetFields']['fields'] as Map<String, dynamic>;
-    _fields = fields.entries
-        .map((data) =>
-            HexabaseField.fromJson(this, data.value as Map<String, dynamic>))
-        .toList();
+    _fields = await HexabaseField.all(this);
     return _fields!;
   }
 
-  HexabaseField field() {
-    return HexabaseField(this);
+  Future<HexabaseField> field(String name) async {
+    if (_fields == null) {
+      await fields();
+    }
+    return fieldSync(name);
   }
 
   Future<List<HexabaseFieldResult>> searchConditions() async {

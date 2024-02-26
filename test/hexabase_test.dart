@@ -35,7 +35,6 @@ void main() {
   test('Get all workspaces', () async {
     var client = Hexabase.instance;
     var workspaces = await client.workspaces();
-    print(workspaces.map((e) => e.id));
     expect(workspaces[0].id, isNot(''));
     expect(workspaces[0].name, isNot(''));
   });

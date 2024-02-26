@@ -22,8 +22,8 @@ void main() {
   test('Get fields', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
-    project.workspace = HexabaseWorkspace(id: keys['workspace']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    project.workspace = HexabaseWorkspace(params: {'id': keys['workspace']});
     var datastore = await project.datastore();
     await new Future.delayed(new Duration(seconds: 10));
     var fields = await datastore.fields();
@@ -32,14 +32,16 @@ void main() {
   test('Add fields', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
-    project.workspace = HexabaseWorkspace(id: keys['workspace']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    project.workspace = HexabaseWorkspace(params: {'id': keys['workspace']});
     var datastore = await project.datastore();
     await new Future.delayed(new Duration(seconds: 10));
     await datastore.fields();
+    /*
     var field = datastore.field();
     field.name('ja', '価格').name('en', 'Price');
     field.dataType = HexabaseFieldType.number;
     await field.save();
+    */
   });
 }

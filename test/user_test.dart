@@ -37,6 +37,13 @@ void main() {
     expect(token, isNotNull);
     expect(token, client.token);
   });
+  test('User login and fetch', () async {
+    var keys = await loadFile();
+    var client = Hexabase();
+    await client.login(keys['email'], keys['password']);
+    expect(client.token, isNotNull);
+    await client.currentUser!.fetch();
+  });
   test('User logout', () async {
     var keys = await loadFile();
     var client = Hexabase();

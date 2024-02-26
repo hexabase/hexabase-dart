@@ -22,7 +22,7 @@ void main() {
   test('Get roles', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var roles = await project.roles();
     print(roles);
   });

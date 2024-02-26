@@ -5,24 +5,31 @@ import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/user.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/workspace.dart';
+import 'package:signalr_netcore/signalr_client.dart';
 
 import 'graphql.dart';
 
 class Hexabase {
   static late Hexabase _instance;
   final HexabaseEnv env;
-  late HexabaseUser auth;
-  late HexabaseWorkspace _workspace;
-  late HexabaseProject _project;
+  // late HexabaseUser auth;
+  late List<HexabaseWorkspace> _workspaces = [];
   String? token;
   HexabaseUser? currentUser;
   late DateTime expiryDate;
   late GraphQLClient graphQLClient;
   bool _initialized = false;
+  late HexabaseWorkspace currentWorkspace;
 
   static int persistenceNone = 0;
   static int persistenceLocal = 1;
   int persistence = Hexabase.persistenceNone;
+
+  late String graphQLUrl;
+  late String restUrl;
+  late String pubSubUrl;
+  HubConnection? hubConnection = null;
+  int connectionCount = 0;
 
   static Hexabase get instance {
     assert(
@@ -32,22 +39,47 @@ class Hexabase {
     return _instance;
   }
 
-  Hexabase({this.env = HexabaseEnv.production}) {
+  Hexabase(
+      {this.env = HexabaseEnv.production,
+      String? graphQLUrl,
+      String? restUrl,
+      String? pubSubUrl}) {
     HexabaseBase.client = this;
-    auth = HexabaseUser();
-    _workspace = HexabaseWorkspace();
-    _project = HexabaseProject();
+    if (env == HexabaseEnv.staging) {
+      this.graphQLUrl = 'https://stg-hxb-graph.hexabase.com/graphql';
+      this.restUrl = 'https://stg-api.hexabase.com';
+      this.pubSubUrl = 'https://stg-pubsub.hexabase.com/hub';
+    } else {
+      this.graphQLUrl = 'https://graphql.hexabase.com/graphql';
+      this.restUrl = 'https://api.hexabase.com';
+      this.pubSubUrl = 'https://pubsub.hexabase.com/hub';
+    }
+
+    if (graphQLUrl != null) {
+      this.graphQLUrl = graphQLUrl;
+    }
+    if (restUrl != null) {
+      this.restUrl = restUrl;
+    }
+    if (pubSubUrl != null) {
+      this.pubSubUrl = pubSubUrl;
+    }
+
+    // auth = HexabaseUser();
     graphQLClient = GraphQLClient(
       cache: GraphQLCache(),
       link: HttpLink(
-        getEndpoint(),
+        this.graphQLUrl,
       ),
     );
     _initialized = true;
     Hexabase._instance = this;
   }
 
-  Future<bool> login(String email, String password) {
+  Future<bool> login(String email, String password) async {
+    if (email == '' || password == '') {
+      throw Exception('Email and password are required');
+    }
     return HexabaseUser.login(email, password);
   }
 
@@ -67,12 +99,13 @@ class Hexabase {
   }
 
   Future<HexabaseUser?> getCurrentUser() {
-    return HexabaseUser.getCurrentUser();
+    return HexabaseUser.current();
   }
 
   Future<bool> isLogin() async {
     try {
-      await getCurrentUser();
+      var user = await getCurrentUser();
+      await user!.fetch();
       await workspaces();
     } catch (e) {
       if (currentUser != null) {
@@ -83,30 +116,22 @@ class Hexabase {
     return token != null;
   }
 
-  Future<HexabaseWorkspace> current(String workspaceId) async {
-    final response =
-    await HexabaseBase.query(GRAPHQL_SELECT_WORKSPACE, variables: {
-      'setCurrentWorkSpaceInput': {
-        'workspace_id': workspaceId,
-      }
-    });
-    final result = response?.data?['setCurrentWorkSpace']?['success'] as bool?;
-    if (result == null || result == false) {
-      throw Exception('Not Found Workspace');
-    }
-    return HexabaseWorkspace(id: workspaceId);
+  Future<HexabaseWorkspace> setWorkspace(String workspaceId) async {
+    currentWorkspace = await HexabaseWorkspace.current(workspaceId);
+    return currentWorkspace;
   }
 
   HexabaseWorkspace workspace({String? id}) {
-    return HexabaseWorkspace(id: id);
+    if (id == null) return HexabaseWorkspace();
+    return HexabaseWorkspace(params: {'id': id});
   }
 
-  Future<List<HexabaseWorkspace>> workspaces() {
-    return _workspace.all();
-  }
-
-  HexabaseProject project({String? id}) {
-    return HexabaseProject(id: id);
+  Future<List<HexabaseWorkspace>> workspaces() async {
+    if (_workspaces.isNotEmpty) {
+      return Future.value(_workspaces);
+    }
+    _workspaces = await HexabaseWorkspace.all();
+    return Future.value(_workspaces);
   }
 
   Future<List<HexabaseGroup>> groups() {
@@ -121,36 +146,38 @@ class Hexabase {
     }
   }
 
-  String getEndpoint() {
-    if (env == HexabaseEnv.staging) {
-      return 'https://hxb-graph.hexabase.com/graphql';
-    } else {
-      return 'https://graphql.hexabase.com/graphql';
-    }
-  }
-
-  String getRestEndPoint() {
-    if (env == HexabaseEnv.staging) {
-      return 'https://az-api.hexabase.com';
-    } else {
-      return 'https://api.hexabase.com';
-    }
-  }
-
-  String getSSEEndPoint() {
-    if (env == HexabaseEnv.staging) {
-      return 'https://az-sse.hexabase.com';
-    } else {
-      return 'https://sse.hexabase.com';
-    }
-  }
-
   void init() {
-    final httpLink = HttpLink(getEndpoint());
+    final httpLink = HttpLink(graphQLUrl);
     final authLink = AuthLink(
       getToken: () async => 'Bearer $token',
     );
     Link link = authLink.concat(httpLink);
     graphQLClient = GraphQLClient(cache: GraphQLCache(), link: link);
+  }
+
+  Future<bool> pubSub(String channel, void Function(List<Object?>?) f) async {
+    if (hubConnection != null && hubConnection!.connectionId != null) {
+      return true;
+    }
+    try {
+      hubConnection =
+          HubConnectionBuilder().withUrl(HexabaseBase.client.pubSubUrl).build();
+      await hubConnection!.start();
+      hubConnection!.on(channel, f);
+      connectionCount++;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<void> unsubscribe(String channel) async {
+    if (hubConnection != null) {
+      hubConnection!.off(channel);
+      connectionCount--;
+    }
+    if (connectionCount == 0) {
+      await hubConnection!.stop();
+    }
   }
 }

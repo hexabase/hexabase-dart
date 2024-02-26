@@ -22,7 +22,7 @@ void main() {
   test('Make search conditions (equalTo)', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = client.project(id: keys['project']);
+    var project = await client.currentWorkspace.project(id: keys['project']);
     var datastore = await project.datastore(id: keys['datastore']);
     var params = datastore.query();
     params.page(1).per(10).displayId(true);

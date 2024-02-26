@@ -52,17 +52,12 @@ class HexabaseBase {
     return result;
   }
 
-  static Future<void> subscribe(String channel, Function(Event) f) async {
-    final url =
-        "${HexabaseBase.client.getSSEEndPoint()}/sse?channel=${channel}";
-    /*
-    final eventSource = await (kIsWeb
-        ? EventSource.connect(url, client: BrowserClient())
-        : EventSource.connect(url));
-    */
-    final eventSource = await EventSource.connect(url);
-    eventSource.listen(f);
-  }
+  static Future<void> subscribe(
+          String channel, void Function(List<Object?>?) f) =>
+      client.pubSub(channel, f);
+
+  static Future<void> unsubscribe(String channel) async =>
+      client.unsubscribe(channel);
 
   static Future<dynamic> get(String path,
       {Map<String, String>? query,
@@ -71,7 +66,7 @@ class HexabaseBase {
     if (auth && client.token == null) {
       throw Exception('Not authenticated');
     }
-    var uri = Uri.parse('${client.getRestEndPoint()}$path');
+    var uri = Uri.parse('${client.restUrl}$path');
     if (query != null) {
       uri = uri.replace(queryParameters: query);
     }
@@ -103,7 +98,7 @@ class HexabaseBase {
     if (auth && client.token == null) {
       throw Exception('Not authenticated');
     }
-    var uri = Uri.parse('${client.getRestEndPoint()}$path');
+    var uri = Uri.parse('${client.restUrl}$path');
     if (query != null) {
       uri = uri.replace(queryParameters: query);
     }
@@ -130,18 +125,8 @@ class HexabaseBase {
     }
     final dio = Dio();
     dio.interceptors.add(LogInterceptor(responseBody: false));
-    // dio.options.contentType = Headers.formUrlEncodedContentType;
-    /*
-    if (multipart) {
-      data = FormData.fromMap({
-        'filename': data['filename'],
-        'file': MultipartFile.fromBytes(data['file'],
-            filename: data['filename'], contentType: MediaType('image', 'png')),
-      });
-    }
-    */
     final response = await dio.post(
-      '${client.getRestEndPoint()}$path',
+      '${client.restUrl}$path',
       data: data,
       options: Options(
         headers: {
