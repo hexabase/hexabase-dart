@@ -183,7 +183,8 @@ class HexabaseHistory extends HexabaseBase {
       'post_mode': '',
       'comment': comment,
     };
-    if (unread != null && unread) {
+    if (unread != null && !unread) {
+    } else {
       payload['is_send_item_unread'] = true;
     }
     var response =

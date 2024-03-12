@@ -277,19 +277,27 @@ void main() {
     await item.delete();
   });
   test('Subscribe item', () async {
-    var keys = await loadFile();
     var client = Hexabase.instance;
-    var project = await client.currentWorkspace.project(id: keys['project']);
-    var datastore = await project.datastore(id: keys['datastore']['main']);
+    await client.setWorkspace('644f6e5ab30d853869ec919f');
+    var project =
+        await client.currentWorkspace.project(id: '650a30501222568b1ae7a2c2');
+    var datastore = await project.datastore(id: '655af47f12587163f1dd3b06');
     var items = await datastore.items();
     var item = items.first;
-    item.subscribe((event) {
-      print("event -> $event");
+    var message = 'Hello';
+    var actionName = 'update';
+    item.subscribe(actionName, (itemSubscription) async {
+      print("subscribed");
+      expect(itemSubscription.comment, message);
+      expect(itemSubscription.item.id, item.id);
+      item.unsubscribe(actionName);
     });
-    item.set('test_number', 110).set('test_datetime', DateTime.now());
-    await item.save();
-    await new Future.delayed(new Duration(seconds: 360));
-  }, timeout: Timeout(Duration(minutes: 2)));
+    var history = item.history();
+    history.set('comment', message);
+    await history.save();
+    expect(history.id, isNot(''));
+    await Future.delayed(const Duration(seconds: 20));
+  });
 }
 
 String generateNonce([int length = 32]) {
