@@ -1,7 +1,7 @@
 import './hexabase.dart';
 import 'package:graphql/client.dart';
 import 'package:dio/dio.dart';
-import 'package:eventsource/eventsource.dart';
+// import 'package:eventsource/eventsource.dart';
 
 class HexabaseBase {
   static late Hexabase client;
