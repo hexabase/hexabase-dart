@@ -286,7 +286,7 @@ void main() {
     var item = items.first;
     var message = 'Hello';
     var actionName = 'update';
-    item.subscribe(actionName, (itemSubscription) async {
+    item.subscribe(actionName, (itemSubscription) {
       print("subscribed");
       expect(itemSubscription.comment, message);
       expect(itemSubscription.item.id, item.id);
