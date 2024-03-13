@@ -52,13 +52,6 @@ class HexabaseBase {
     return result;
   }
 
-  static Future<void> subscribe(
-          String channel, void Function(List<Object?>?) f) =>
-      client.pubSub(channel, f);
-
-  static Future<void> unsubscribe(String channel) async =>
-      client.unsubscribe(channel);
-
   static Future<dynamic> get(String path,
       {Map<String, String>? query,
       bool auth = true,

@@ -3,7 +3,9 @@ import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/graphql.dart';
 import 'package:hexabase/src/history.dart';
+import 'package:hexabase/src/item_subscription.dart';
 import 'package:hexabase/src/items_parameter.dart';
+import 'package:signalr_netcore/hub_connection.dart';
 import 'package:tuple/tuple.dart';
 import 'package:hexabase/src/field.dart';
 
@@ -565,9 +567,42 @@ class HexabaseItem extends HexabaseBase {
     return json;
   }
 
-  void subscribe(Function(dynamic) f) async {
-    final channel = "item_view_${id}_${HexabaseBase.client.currentUser!.id}";
-    print(channel);
-    HexabaseBase.subscribe(channel, (p0) => print(p0));
+  String _subscribeAction(String action) {
+    if (action.toUpperCase() == 'UPDATE') {
+      return "item_view_${id}_${HexabaseBase.client.currentUser!.id}";
+    }
+    throw Exception('Invalid action $action');
   }
+
+  Future<void> subscribe(
+      String action, void Function(HexabaseItemSubscription) f) async {
+    final channel = _subscribeAction(action);
+    await HexabaseBase.client.connectPubSub();
+    HexabaseBase.client.hubConnection!.on(channel, (List<Object?>? data) async {
+      if (data == null || data[0] == null || data[0] == '') return;
+      var params = data[0] as Map<String, dynamic>;
+      var user = HexabaseUser(params: {
+        'id': params['user_id'],
+        'username': params['username'],
+        'email': params['email']
+      });
+      var itemSubscription = HexabaseItemSubscription(params: {
+        ...params,
+        ...{
+          'item': this,
+          'user': user,
+        }
+      });
+      f(itemSubscription);
+    });
+    HexabaseBase.client.hubConnection!.on('messagereceived', (dynamic data) {
+      var d = data[0] as Map<String, dynamic>;
+      if (d['ok'] == 200) return;
+    });
+  }
+
+  bool connected() => HexabaseBase.client.connected();
+
+  Future<void> unsubscribe(String action) =>
+      HexabaseBase.client.unsubscribe(_subscribeAction(action));
 }

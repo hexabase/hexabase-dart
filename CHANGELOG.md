@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.8.2
+
+Support subscribe to datastore item
+
 ## 0.7.0
 
 Support CRUD of datastore

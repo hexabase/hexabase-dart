@@ -5,8 +5,9 @@ import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/user.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/workspace.dart';
+import 'package:signalr_netcore/ihub_protocol.dart';
 import 'package:signalr_netcore/signalr_client.dart';
-
+import 'package:logging/logging.dart';
 import 'graphql.dart';
 
 class Hexabase {
@@ -155,20 +156,37 @@ class Hexabase {
     graphQLClient = GraphQLClient(cache: GraphQLCache(), link: link);
   }
 
-  Future<bool> pubSub(String channel, void Function(List<Object?>?) f) async {
-    if (hubConnection != null && hubConnection!.connectionId != null) {
-      return true;
+  Future<bool> connectPubSub() async {
+    /*
+    Logger.root.level = Level.ALL;
+    Logger.root.onRecord.listen((LogRecord rec) {
+      print('${rec.level.name}: ${rec.time}: ${rec.message}');
+    });
+    final hubProtLogger = Logger("SignalR - hub");
+    final transportProtLogger = Logger("SignalR - transport");
+    */
+    final httpOptions = HttpConnectionOptions(
+        // logger: transportProtLogger,
+        skipNegotiation: true,
+        transport: HttpTransportType.WebSockets);
+    if (hubConnection == null || hubConnection!.connectionId == null) {
+      try {
+        var url =
+            "${HexabaseBase.client.pubSubUrl}?token=${HexabaseBase.client.token}";
+        hubConnection = HubConnectionBuilder()
+            .withUrl(
+              url,
+              options: httpOptions,
+            )
+            .withAutomaticReconnect()
+            .build();
+        await hubConnection!.start();
+        connectionCount++;
+      } catch (e) {
+        throw e as Exception;
+      }
     }
-    try {
-      hubConnection =
-          HubConnectionBuilder().withUrl(HexabaseBase.client.pubSubUrl).build();
-      await hubConnection!.start();
-      hubConnection!.on(channel, f);
-      connectionCount++;
-      return true;
-    } catch (e) {
-      return false;
-    }
+    return true;
   }
 
   Future<void> unsubscribe(String channel) async {
@@ -179,5 +197,10 @@ class Hexabase {
     if (connectionCount == 0) {
       await hubConnection!.stop();
     }
+  }
+
+  bool connected() {
+    return hubConnection != null &&
+        hubConnection!.state == HubConnectionState.Connected;
   }
 }
