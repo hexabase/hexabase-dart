@@ -200,12 +200,14 @@ class HexabaseProject extends HexabaseBase {
     return data['data'];
   }
 
+  /*
   Future<List<HexabaseRole>> roles() async {
     if (_roles.isEmpty) {
       _roles = await HexabaseRole.all(this);
     }
     return _roles as List<HexabaseRole>;
   }
+  */
 
   static Future<List<HexabaseProject>> all(String id) async {
     final response = await HexabaseBase.query(

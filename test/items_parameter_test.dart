@@ -17,13 +17,14 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase();
     await client.login(keys['email'], keys['password']);
+    await client.setWorkspace(keys['workspace']);
   });
 
   test('Make search conditions (equalTo)', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = await client.currentWorkspace.project(id: keys['project']);
-    var datastore = await project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
     var params = datastore.query();
     params.page(1).per(10).displayId(true);
     params.equalTo('name', '梨');

@@ -18,17 +18,16 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase();
     await client.login(keys['email'], keys['password']);
+    await client.setWorkspace(keys['workspace']);
   });
 
   test('Get group tree', () async {
-    var keys = await loadFile();
     var client = Hexabase.instance;
     var groups = await client.groups();
-    print(groups);
+    expect(groups.length, isNot(0));
   });
 
   test('Find group', () async {
-    var keys = await loadFile();
     var client = Hexabase.instance;
     var groups = await client.groups();
     var group = await client.group(id: groups[0].id);
@@ -36,7 +35,6 @@ void main() {
   });
 
   test('Create group', () async {
-    var keys = await loadFile();
     var client = Hexabase.instance;
     var groups = await client.groups();
     var group = await client.group();
@@ -44,10 +42,10 @@ void main() {
     group.parent = groups[0];
     group.displayId = 'test_group';
     await group.save();
+    await group.delete();
   });
 
   test('Update group', () async {
-    var keys = await loadFile();
     var client = Hexabase.instance;
     var groups = await client.groups();
     var group = await client.group();
@@ -57,10 +55,10 @@ void main() {
     await group.save();
     group.name = 'テストグループ2';
     await group.save();
+    await group.delete();
   });
 
   test('Delete group', () async {
-    var keys = await loadFile();
     var client = Hexabase.instance;
     var groups = await client.groups();
     var group = await client.group();

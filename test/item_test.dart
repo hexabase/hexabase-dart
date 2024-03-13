@@ -266,7 +266,7 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase.instance;
     var project = await client.currentWorkspace.project(id: keys['project']);
-    var datastore = await project.datastore(id: keys['datastore']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
     var item = await datastore.item();
     item.set('name', 'スイカ').set('price', 100);
     await item.save();

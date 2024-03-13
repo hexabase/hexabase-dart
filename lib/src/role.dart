@@ -43,13 +43,14 @@ class HexabaseRole extends HexabaseBase {
     }
     return this;
   }
-
+  /*
   static Future<List<HexabaseRole>> all(HexabaseProject project) async {
     final response =
         await HexabaseBase.get('/v1/api/get_project_roles', query: {
       'project_id': project.id!,
     });
-    print(response);
+    // print(response);
     return [];
   }
+  */
 }

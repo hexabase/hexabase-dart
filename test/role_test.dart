@@ -17,8 +17,10 @@ void main() {
     var keys = await loadFile();
     var client = Hexabase();
     await client.login(keys['email'], keys['password']);
+    await client.setWorkspace(keys['workspace']);
   });
 
+  /*
   test('Get roles', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
@@ -26,4 +28,5 @@ void main() {
     var roles = await project.roles();
     print(roles);
   });
+  */
 }

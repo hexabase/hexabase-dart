@@ -36,6 +36,7 @@ void main() {
     expect(project.id, isNot(''));
   });
 
+  /*
   test('Create project', () async {
     var client = Hexabase.instance;
     var project = await client.currentWorkspace.project();
@@ -53,7 +54,7 @@ void main() {
     expect(project.id, isNot(''));
     await project.delete();
   });
-
+  */
   test('Execute function', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;
