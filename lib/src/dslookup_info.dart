@@ -1,8 +1,8 @@
-import 'package:collection/collection.dart';
+// import 'package:collection/collection.dart';
 // import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
-import 'package:hexabase/src/field_option.dart';
-import 'package:hexabase/src/graphql.dart';
+// import 'package:hexabase/src/field_option.dart';
+// import 'package:hexabase/src/graphql.dart';
 
 class HexabaseDSLookupInfo extends HexabaseBase {
   late String dslookupFieldId;

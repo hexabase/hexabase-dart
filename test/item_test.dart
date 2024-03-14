@@ -234,7 +234,7 @@ void main() {
     query.equalTo('price', 120).per(100);
     var items = await datastore.items(query: query);
     for (var item in items) {
-      await item.delete();
+      // await item.delete();
     }
   });
 
@@ -277,11 +277,10 @@ void main() {
     await item.delete();
   });
   test('Subscribe item', () async {
+    var keys = await loadFile();
     var client = Hexabase.instance;
-    await client.setWorkspace('644f6e5ab30d853869ec919f');
-    var project =
-        await client.currentWorkspace.project(id: '650a30501222568b1ae7a2c2');
-    var datastore = await project.datastore(id: '655af47f12587163f1dd3b06');
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
     var items = await datastore.items();
     var item = items.first;
     var message = 'Hello';
