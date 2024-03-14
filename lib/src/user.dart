@@ -55,6 +55,8 @@ class HexabaseUser extends HexabaseBase {
         break;
       case '__typename':
         break;
+      default:
+        throw Exception('Invalid field name in HexabaseUser, $key and $value');
     }
     return this;
   }

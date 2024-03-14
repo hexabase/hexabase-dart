@@ -54,7 +54,6 @@ class HexabaseHistory extends HexabaseBase {
       'itemId': item.id,
       'getHistoryParamQueries': queries,
     };
-    var user = HexabaseUser();
     var response =
         await HexabaseBase.query(GRAPHQL_ITEM_HISTORIES, variables: params);
     if (response.data == null || response.data!['getHistories'] == null) {
@@ -64,7 +63,7 @@ class HexabaseHistory extends HexabaseBase {
     final histories = res['histories'].map<HexabaseHistory>((history) {
       (history as Map<String, dynamic>).addAll({
         'item': item,
-        'user': user,
+        'user': HexabaseUser(),
       });
       return HexabaseHistory(params: history);
     }).toList();
@@ -149,7 +148,7 @@ class HexabaseHistory extends HexabaseBase {
         user.set('email', value);
         break;
       case 'username':
-        user.set('userName', value);
+        user.set('username', value);
         break;
       case 'is_fetchreplymail':
         isFetchreplymail = value;

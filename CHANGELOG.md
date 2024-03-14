@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.8.5
+
+- Close subscription when logout
+- Fix field name
+
 ## 0.8.4
 
 Remove ItemSubscription

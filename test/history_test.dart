@@ -58,6 +58,7 @@ void main() {
     expect(history2.id, isNotEmpty);
     var histories = await item.histories();
     expect(histories.length, greaterThanOrEqualTo(2));
+    expect(histories.first.user.name, client.currentUser!.name);
     await item.delete();
   });
 

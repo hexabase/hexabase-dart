@@ -90,7 +90,15 @@ class Hexabase {
 
   Future<bool> logout() async {
     if (currentUser != null) {
-      return currentUser!.logout();
+      try {
+        currentUser!.logout();
+        if (hubConnection != null) {
+          await hubConnection!.stop();
+          hubConnection = null;
+        }
+      } catch (e) {
+        // ignore
+      }
     }
     return true;
   }
