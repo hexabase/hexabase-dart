@@ -32,6 +32,8 @@ class HexabaseHistory extends HexabaseBase {
   late bool postForRel;
   late String postMode;
   late bool isNotify;
+  late bool isNotifyToSender;
+  late bool isSendItemUnread;
 
   HexabaseHistory({Map<String, dynamic>? params}) : super() {
     if (params != null) sets(params);
@@ -80,16 +82,21 @@ class HexabaseHistory extends HexabaseBase {
     if (value == null) return this;
     switch (key) {
       case 'history_id':
+      case '_id':
         id = value;
         break;
       case 'item':
         item = value as HexabaseItem;
         break;
       case 'display_order':
+      case 'displayorder':
         displayOrder = value;
         break;
       case 'comment':
         comment = value;
+        break;
+      case 'issenditemunread':
+        isSendItemUnread = value;
         break;
       case 'is_unread':
         isUnread = value;
@@ -101,6 +108,7 @@ class HexabaseHistory extends HexabaseBase {
         actionId = value;
         break;
       case 'action_name':
+      case 'actionname':
         actionName = value;
         break;
       case 'transaction_id':
@@ -113,10 +121,14 @@ class HexabaseHistory extends HexabaseBase {
         isStatusAction = value;
         break;
       case 'UserObjID':
+      case 'user_obj_id':
         user.set('id', value);
         break;
       case 'user':
         user = value as HexabaseUser;
+        break;
+      case 'isnotifytosender':
+        isNotifyToSender = value;
         break;
       case 'updated_by':
         updatedBy = value;
@@ -143,6 +155,7 @@ class HexabaseHistory extends HexabaseBase {
         isFetchreplymail = value;
         break;
       case 'IsChanged':
+      case 'ischanged':
         isChanged = value;
         break;
       case 'post_for_rel':

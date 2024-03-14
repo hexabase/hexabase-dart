@@ -16,7 +16,6 @@ export 'src/history.dart';
 export 'src/field_option.dart';
 export 'src/field_result.dart';
 export 'src/file_info.dart';
-export 'src/item_subscription.dart';
 export 'src/items_parameter.dart';
 export 'src/status.dart';
 export 'src/user_role.dart';

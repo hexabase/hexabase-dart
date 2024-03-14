@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.8.4
+
+Remove ItemSubscription
+
 ## 0.8.3
 
 Add export

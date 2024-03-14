@@ -3,7 +3,6 @@ import 'package:hexabase/hexabase.dart';
 import 'package:hexabase/src/base.dart';
 import 'package:hexabase/src/graphql.dart';
 import 'package:hexabase/src/history.dart';
-import 'package:hexabase/src/item_subscription.dart';
 import 'package:hexabase/src/items_parameter.dart';
 import 'package:signalr_netcore/hub_connection.dart';
 import 'package:tuple/tuple.dart';
@@ -575,7 +574,7 @@ class HexabaseItem extends HexabaseBase {
   }
 
   Future<void> subscribe(
-      String action, void Function(HexabaseItemSubscription) f) async {
+      String action, void Function(HexabaseHistory) f) async {
     final channel = _subscribeAction(action);
     await HexabaseBase.client.connectPubSub();
     HexabaseBase.client.hubConnection!.on(channel, (List<Object?>? data) async {
@@ -586,14 +585,14 @@ class HexabaseItem extends HexabaseBase {
         'username': params['username'],
         'email': params['email']
       });
-      var itemSubscription = HexabaseItemSubscription(params: {
+      var history = HexabaseHistory(params: {
         ...params,
         ...{
           'item': this,
           'user': user,
         }
       });
-      f(itemSubscription);
+      f(history);
     });
     HexabaseBase.client.hubConnection!.on('messagereceived', (dynamic data) {
       var d = data[0] as Map<String, dynamic>;
