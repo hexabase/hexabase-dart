@@ -40,6 +40,32 @@ void main() {
     expect(history.id, isNotEmpty);
     await item.delete();
   });
+  test('Create item history with file', () async {
+    var keys = await loadFile();
+    var client = Hexabase.instance;
+    var project = await client.currentWorkspace.project(id: keys['project']);
+    var datastore = await project.datastore(id: keys['datastore']['main']);
+    var item = await datastore.item();
+    item.set('test_text_unique', generateNonce());
+    item.set('Title', 'create item history with file!!');
+    await item.save();
+    var history = item.history();
+    history.set('comment', 'test');
+    var ary = ['test.png', 'test2.png'];
+    for (var str in ary) {
+      var filePath = 'test/$str';
+      var file = await item.file();
+      file.sets({
+        'name': basename(filePath),
+        'contentType': lookupMimeType(filePath) ?? "application/octet-stream",
+        'data': File(filePath).readAsBytesSync()
+      });
+      history.files.add(file);
+    }
+    await history.save();
+    expect(history.id, isEmpty);
+    // await item.delete();
+  });
   test('Get item histories', () async {
     var keys = await loadFile();
     var client = Hexabase.instance;

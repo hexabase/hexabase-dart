@@ -30,7 +30,11 @@ class HexabaseFile extends HexabaseBase {
 
   HexabaseFile sets(Map<String, dynamic> params) {
     if (params.containsKey('item')) set('item', params['item']!);
-    if (params.containsKey('field')) set('field', params['field']!);
+    if (params.containsKey('field')) {
+      set('field', params['field']!);
+    } else {
+      field = null;
+    }
     params.forEach((key, value) => set(key, value));
     return this;
   }
@@ -170,12 +174,24 @@ class HexabaseFile extends HexabaseBase {
   }
 
   Future<bool> create() async {
-    var response = await HexabaseBase.mutation(
-        GRAPHQL_CREATE_ITEM_FILE_ATTACHMENT,
-        variables: {'payload': createJson()});
-    if (response.data != null) {
-      id = response.data!['createItemFileAttachment']['_id'];
+    if (field == null) {
+      var res = await HexabaseBase.post(
+          '/api/v0/files',
+          {
+            'filename': name,
+            'file': data,
+          },
+          multipart: true);
+      id = (res as Map<String, dynamic>)['file_id'];
       return true;
+    } else {
+      var response = await HexabaseBase.mutation(
+          GRAPHQL_CREATE_ITEM_FILE_ATTACHMENT,
+          variables: {'payload': createJson()});
+      if (response.data != null) {
+        id = response.data!['createItemFileAttachment']['_id'];
+        return true;
+      }
     }
     return false;
   }

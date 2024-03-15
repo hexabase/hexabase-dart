@@ -360,6 +360,7 @@ class HexabaseDatastore extends HexabaseBase {
 
   HexabaseField fieldSync(String name) {
     if (_fields == null) throw Exception('Fields are not fetched');
+    if (name == 'title') name = 'Title';
     var field = _fields!.firstWhereOrNull((field) =>
         field.name('ja') == name ||
         field.name('en') == name ||

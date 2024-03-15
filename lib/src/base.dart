@@ -118,6 +118,13 @@ class HexabaseBase {
     }
     final dio = Dio();
     dio.interceptors.add(LogInterceptor(responseBody: false));
+    if (multipart) {
+      data = FormData.fromMap({
+        'file':
+            MultipartFile.fromBytes(data['file'], filename: data['filename']),
+        'filename': data['filename'],
+      });
+    }
     final response = await dio.post(
       '${client.restUrl}$path',
       data: data,

@@ -220,7 +220,7 @@ class HexabaseItem extends HexabaseBase {
         break;
       case 'title':
       case 'Title':
-        title = value as String;
+        setFieldValue(key, value);
         break;
       case 'unread':
         if (value is int) {

@@ -34,6 +34,7 @@ class HexabaseHistory extends HexabaseBase {
   late bool isNotify;
   late bool isNotifyToSender;
   late bool isSendItemUnread;
+  List<HexabaseFile> files = [];
 
   HexabaseHistory({Map<String, dynamic>? params}) : super() {
     if (params != null) sets(params);
@@ -186,6 +187,10 @@ class HexabaseHistory extends HexabaseBase {
     return create();
   }
 
+  Future<HexabaseFile> file() async {
+    return HexabaseFile();
+  }
+
   Future<bool> create([bool? unread]) async {
     Map<String, dynamic> payload = {
       'workspace_id': HexabaseBase.client.currentWorkspace.id,
@@ -199,6 +204,18 @@ class HexabaseHistory extends HexabaseBase {
     } else {
       payload['is_send_item_unread'] = true;
     }
+
+    if (files.isNotEmpty) {
+      List<String> ary = [];
+      for (var file in files) {
+        if (file.id == '') {
+          await file.save();
+        }
+        ary.add(file.id);
+      }
+      payload['file_ids'] = ary;
+      return createWithFiles(payload);
+    }
     var response =
         await HexabaseBase.mutation(GRAPHQL_POST_NEW_ITEM_HISTORY, variables: {
       'payload': payload,
@@ -211,6 +228,21 @@ class HexabaseHistory extends HexabaseBase {
       throw Exception('Failed to create history');
     }
     sets(res['item_history'] as Map<String, dynamic>);
+    return true;
+  }
+
+  Future<bool> createWithFiles(Map<String, dynamic> payload) async {
+    var path =
+        '/api/v0/applications/${payload['project_id']}/datastores/${payload['datastore_id']}/items/histories/${payload['item_id']}';
+    if (payload['is_send_item_unread'] == true) {
+      path += '?is_send_item_unread=true';
+    }
+    print(path);
+    var res = await HexabaseBase.post(path, {
+      'comment': payload['comment'],
+      'file_ids': payload['file_ids'],
+    });
+    print(res);
     return true;
   }
 
